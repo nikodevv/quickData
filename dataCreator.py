@@ -16,7 +16,11 @@ class DataScraper():
 		self.mappedData = self.mapData()
 
 	def mapData(self):
-		pass
+		tempValues = []
+		for i in range(len(self.values)):
+			tempValues.append([self.values[i],self.values[i+1]])
+			i = i + 3
+		return tempValues
 	def format_values(self):
 		"""makes sure the values elements of raw data are all valid integers 
 		except per share amounts, which are valid"""
