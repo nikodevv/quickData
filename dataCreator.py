@@ -11,6 +11,9 @@ class DataScraper():
 		self.tree = fromstring(self.page.content)
 
 		self.line_items = self.tree.xpath('//td[@class="pl "]/a/text()')
-		self.line_items.pop(0) # unnecessary item which ruins mapping
 		self.values = self.tree.xpath('//td[@class="nump"]/text()')
-		
+
+		self.mappedData = self.mapData()
+
+	def mapData(self):
+		return dict(zip(self.line_items,self.values))

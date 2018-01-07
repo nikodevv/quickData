@@ -32,7 +32,12 @@ class TestDataCreation(TestCase):
 		'Diluted': [-0.15, -0.36]
 		}
 
-		self.mappedData = self.testScraper.mappedData()
+		self.assertEqual(self.testScraper.mappedData, correct_mapped_data)
 
+	@skip
 	def test_output_data(self):
 		self.fail(self.testScraper.line_items)
+
+	def test_values_correctly_formated(self):
+		for x in self.testScraper.values:
+			self.assertIsInstance(x,int)
