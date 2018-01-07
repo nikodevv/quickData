@@ -17,3 +17,5 @@ class DataScraper():
 
 	def mapData(self):
 		return dict(zip(self.line_items,self.values))
+
+	def cleanValues(self):
