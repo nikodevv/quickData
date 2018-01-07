@@ -13,11 +13,23 @@ class TestDataCreation(TestCase):
 		self.assertTrue(self.testScraper.values)
 		self.assertIn(self.testScraper.line_items[-1],'Diluted')
 
-	@skip
 	def test_maps_data_correctly(self):
 		correct_mapped_data = {
-		'Revenue': '2'
-
+		'Revenue': [128204,207937],
+		'Cost of revenue': [127780, 210710],
+		'Research and development': [54562, 239442],
+		'Sales and marketing': [34658, 101511],
+		'General and administrative': [42172, 118101],
+		'Total costs and expenses': [259172, 669764],
+		'Loss from operations': [-130968, -461827],
+		'Interest income': [1938, 6253],
+		'Interest expense': [-648,-887],
+		'Other income (expense), net': [-1421, 1002],
+		'Loss before income taxes': [-131099, -455459],
+		'Income tax benefit (expense)': [6871, 12300],
+		'Net loss': [-124228, -443159],
+		'Basic': [-0.15,-0.36],
+		'Diluted': [-0.15, -0.36]
 		}
 
 		self.mappedData = self.testScraper.mappedData()
