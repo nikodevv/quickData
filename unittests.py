@@ -1,7 +1,7 @@
-import unittest
+from unittest import TestCase, skip
 from dataCreator import DataScraper
 
-class TestDataCreation(unittest.TestCase):
+class TestDataCreation(TestCase):
 	"""Tests scrapping of EDGAR website"""
 
 	def setUp(self):
@@ -12,3 +12,15 @@ class TestDataCreation(unittest.TestCase):
 		self.assertTrue(self.testScraper.line_items)
 		self.assertTrue(self.testScraper.values)
 		self.assertIn(self.testScraper.line_items[-1],'Diluted')
+
+	@skip
+	def test_maps_data_correctly(self):
+		correct_mapped_data = {
+		'Revenue': '2'
+
+		}
+
+		self.mappedData = self.testScraper.mappedData()
+
+	def test_output_data(self):
+		self.fail(self.testScraper.line_items)

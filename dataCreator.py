@@ -10,7 +10,7 @@ class DataScraper():
 		self.page = requests.get(company_IS_data_link)
 		self.tree = fromstring(self.page.content)
 
-		self.line_items = self.tree.xpath('//td[@class="pl "]/a//text()')
+		self.line_items = self.tree.xpath('//td[@class="pl "]/a/text()')
 		self.line_items.pop(0) # unnecessary item which ruins mapping
 		self.values = self.tree.xpath('//td[@class="nump"]/text()')
 		
