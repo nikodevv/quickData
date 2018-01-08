@@ -14,6 +14,7 @@ class TestDataCreation(TestCase):
 		self.assertIn(self.testScraper.line_items[-1],'Diluted')
 
 	def test_maps_data_correctly(self):
+		self.maxDiff = None
 		correct_mapped_data = {
 		'Revenue': [128204,207937],
 		'Cost of revenue': [127780, 210710],
@@ -28,16 +29,17 @@ class TestDataCreation(TestCase):
 		'Loss before income taxes': [-131099, -455459],
 		'Income tax benefit (expense)': [6871, 12300],
 		'Net loss': [-124228, -443159],
-		'Basic': [-0.15,-0.36],
-		'Diluted': [-0.15, -0.36]
+		'Basic': [float(-0.15),float(-0.36)],
+		'Diluted': [float(-0.15), float(-0.36)]
 		}
-
-		self.assertEqual(self.testScraper.mappedData, correct_mapped_data)
+		self.assertDictEqual(self.testScraper.mappedData, correct_mapped_data)
 
 	@skip
 	def test_output_data(self):
 		self.fail(self.testScraper.line_items)
 
 	def test_values_correctly_formated(self):
-		for x in self.testScraper.values[:-2]:
+		for x in self.testScraper.values[:-4]:
 			self.assertIsInstance(x,int)
+		for x in self.testScraper.values[-4:]:
+			self.assertIsInstance(x,float)
