@@ -21,7 +21,7 @@ class TestDataCreation(TestCase):
 		'Research and development': [54562, 239442],
 		'Sales and marketing': [34658, 101511],
 		'General and administrative': [42172, 118101],
-		'Total costs and expenses': [float(259172), 669764],
+		'Total costs and expenses': [259172, 669764],
 		'Loss from operations': [-130968, -461827],
 		'Interest income': [1938, 6253],
 		'Interest expense': [-648,-887],

@@ -1,0 +1,4 @@
+To - Do Items:
+
+* Refactor the way scarpper treats some values as ints and others as floats;
+* -- i.e. use floats only.
