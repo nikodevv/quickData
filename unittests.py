@@ -41,3 +41,16 @@ class TestDataCreation(TestCase):
 	def test_values_correctly_formated(self):
 		for x in self.testScraper.values:
 			self.assertIsInstance(x,float)
+
+	def test_can_find_company_documents_from_cik(self):
+		cik = '1564408'
+		links_to_filings = self.testScraper.find_filings(cik)
+		self.assertEqual(links_to_filings[0], "https://www.sec.gov/cgi-bin/" +
+			"viewer?action=view&cik=1564408&accession_number=" + 
+			"0001564590-17-022434&xbrl_type=v")
+		self.assertEqual(links_to_filings[1], "https://www.sec.gov/cgi-bin/" +
+			"viewer?action=view&cik=1564408&accession_number=" +
+			"0001564590-17-017303&xbrl_type=v")
+		self.assertEqual(links_to_filings[2], "https://www.sec.gov/cgi-bin/" + 
+			"viewer?action=view&cik=1564408&accession_number=" + 
+			"0001564590-17-010357&xbrl_type=v")
