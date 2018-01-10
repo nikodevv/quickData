@@ -39,7 +39,5 @@ class TestDataCreation(TestCase):
 		self.fail(self.testScraper.line_items)
 
 	def test_values_correctly_formated(self):
-		for x in self.testScraper.values[:-4]:
-			self.assertIsInstance(x,int)
-		for x in self.testScraper.values[-4:]:
+		for x in self.testScraper.values:
 			self.assertIsInstance(x,float)
