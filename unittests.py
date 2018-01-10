@@ -54,3 +54,13 @@ class TestDataCreation(TestCase):
 		self.assertEqual(links_to_filings[2], "https://www.sec.gov/cgi-bin/" + 
 			"viewer?action=view&cik=1564408&accession_number=" + 
 			"0001564590-17-010357&xbrl_type=v")
+
+	def test_can_categorize_filings(self):
+		link_to_10Q = ("https://www.sec.gov/cgi-bin/viewer?action=view&" + 
+			"cik=1564408&accession_number=0001564590-17-022434&xbrl_type=v")
+		# wtf
+		# techinically this is a link to a 10-K/A, but the two should work 
+		# the same.
+		link_to_10K = ("https://www.sec.gov/cgi-bin/viewer?action=view&cik" + 
+			"=814586&accession_number=0001683168-17-000858&xbrl_type=v")
+		self.assertEqual(self.testScraper.categorize_filing(link_to_10Q),'10-Q')

@@ -29,6 +29,8 @@ class DataScraper():
 		self.values = [float(correctSign(x)) for x in self.values]
 
 	def mapData(self):
+		"""used in initialization -- combines names & values into a single
+		dictionary"""
 		tempValues = []
 		for i in range(0, len(self.values), 4):
 			tempValues.append([self.values[i+1],self.values[i]])
@@ -36,6 +38,8 @@ class DataScraper():
 		return dict(zip(self.line_items, tempValues))
 
 	def find_filings(self, cik):
+		"""returns links to all financial filings which are available for
+		scrapping"""
 		page = requests.get(f'https://www.sec.gov/cgi-bin/browse-edgar?' + 
 			f'action=getcompany&CIK={cik}&type=10-&dateb=&owner='
 			+ 'include&count=40')
@@ -43,6 +47,16 @@ class DataScraper():
 		filing_links = tree.xpath('//a[@id="interactiveDataBtn"]/@href')
 		filing_links = [f'https://www.sec.gov{x}' for x in filing_links]
 		return filing_links
+
+	def categorize_filing(self, link_to_filing):
+		"""takes a filing and returns its type"""
+		page = requests.get(link_to_filing)
+		tree = fromstring(page.content)
+		if '10-Q' in tree.xpath('//strong/text()'):
+			return '10-Q'
+		if '10-K' in tree.xpath('//strong/text()'):
+			return '10-K'
+		return "unknown filing type"
 
 class DataProcessor():
 	pass
