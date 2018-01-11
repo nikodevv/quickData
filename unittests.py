@@ -113,12 +113,14 @@ class TestDataCreation(TestCase):
 		self.assertDictEqual(self.testScraper.mappedData
 			, correct_mapped_data)
 
-	def returns_correct_accession_numbers(self):
-		self.assertEqual(self.testScraper.returns_correct_accession_numbers(
+	def test_returns_correct_accession_numbers(self):
+		self.assertEqual(self.testScraper.
+			extract_accession_number_from_filings_link(
 			"https://www.sec.gov/cgi-bin/viewer?action=view&cik=1564408&"
 			+ "accession_number=0001564590-17-022434&xbrl_type=v", 
 			unformatted=True), '0001564590-17-022434')
-		self.assertEqual(self.testScraper.returns_correct_accession_numbers(
+		self.assertEqual(self.testScraper.
+			extract_accession_number_from_filings_link(
 			"https://www.sec.gov/cgi-bin/viewer?action=view&cik=1564408&"
 			+"accession_number=0001564590-17-022434&xbrl_type=v"),
 			'000156459017022434')

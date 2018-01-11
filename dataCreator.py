@@ -54,7 +54,8 @@ class DataScraper():
 	def create_reports(self, cik, filing_type='10-'):
 		pass
 
-	def gets_tables_from_find_filings(self, cik, filing_type='10-', table_type='all'):
+	def gets_tables_from_find_filings(self, cik, filing_type='10-', 
+		table_type='all'):
 		"""
 		Finds links to each table corresponding to a particular filing type.
 		Currently table_type parameter cannot take any features except "all" 
@@ -74,15 +75,15 @@ class DataScraper():
 		with "-" characters included; otherwise only number characters
 		"""
 		try:
-			accession_number = re.search(link_to_filing,
-				"accession_number=(?)&").group(1)
+			accession_number = re.search('accession_number=(.+?)&', 
+				link_to_filing).group(1)
 		except:
-			raise Exception("extract_links_to_tables_from_link_failing error"
+			raise Exception("extract_links_to_tables_from_link_failing error:"
 				+"Couldn't find apporopriate accession number from link")
-		
+
 		if unformatted == True:
 			return accession_number
-		return accession_number
+		return re.sub('[-]', '', accession_number)
 			
 	def create_tree(self, link):
 		"""returns tree that can be searched via xpath"""
