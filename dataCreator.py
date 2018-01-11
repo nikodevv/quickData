@@ -37,12 +37,15 @@ class DataScraper():
 
 		return dict(zip(self.line_items, tempValues))
 
-	def find_filings(self, cik):
-		"""returns links to all financial filings which are available for
-		scrapping"""
-		page = requests.get(f'https://www.sec.gov/cgi-bin/browse-edgar?' + 
-			f'action=getcompany&CIK={cik}&type=10-&dateb=&owner='
-			+ 'include&count=40')
+	def find_filings(self, cik, type_="10-"):
+		"""
+		returns links to all financial filings which are available for
+		scrapping for a given cik. The type of filigns can be filtered for via
+		type_. i.e. type_ = '10-K', will only return 10-Ks 	
+		"""
+		page = requests.get('https://www.sec.gov/cgi-bin/browse-edgar?' + 
+			f'action=getcompany&CIK={cik}&type={type_}&dateb=&owner='
+			+ 'include&count=100')
 		tree = fromstring(page.content)
 		filing_links = tree.xpath('//a[@id="interactiveDataBtn"]/@href')
 		filing_links = [f'https://www.sec.gov{x}' for x in filing_links]
@@ -54,7 +57,10 @@ class DataScraper():
 		tree = fromstring(page.content)
 		if '10-Q' in tree.xpath('//strong/text()'):
 			return '10-Q'
-		if '10-K' in tree.xpath('//strong/text()'):
+		# Could be bad if a somehow a filing with less than 4 characters 
+		# gets through. Shouldn't occur due to the way find_find_filings
+		# looks for filings.
+		if '10-K' in [x[:4] for x in tree.xpath('//strong/text()')]:
 			return '10-K'
 		return "unknown filing type"
 

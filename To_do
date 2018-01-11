@@ -1,4 +1,3 @@
 To - Do Items:
 
-* Refactor the way scarpper treats some values as ints and others as floats;
-* -- i.e. use floats only.
+* Refactor scrapper so that it is created by beign given a CIK, and then it finds all filings it needs

@@ -5,8 +5,8 @@ class TestDataCreation(TestCase):
 	"""Tests scrapping of EDGAR website"""
 
 	def setUp(self):
-		self.testScraper = DataScraper('https://www.sec.gov/Archives/edgar/data/'
-			+ '1564408/000156459017022434/R4.htm') # Snapchat Sept 30 2017 10-Q
+		self.testScraper = DataScraper('https://www.sec.gov/Archives/edgar/data'
+			+ '/1564408/000156459017022434/R4.htm') # Snapchat Sept 30 2017 10-Q
 
 	def test_can_pull_data_from_link(self):
 		self.assertTrue(self.testScraper.line_items)
@@ -64,3 +64,27 @@ class TestDataCreation(TestCase):
 		link_to_10K = ("https://www.sec.gov/cgi-bin/viewer?action=view&cik" + 
 			"=814586&accession_number=0001683168-17-000858&xbrl_type=v")
 		self.assertEqual(self.testScraper.categorize_filing(link_to_10Q),'10-Q')
+		self.assertEqual(self.testScraper.categorize_filing(link_to_10K),'10-K')
+
+	def test_returns_the_right_filings(self):
+		# checks wheteher scrapper returns all 10-K or 10-Q filings
+		# exclusively..
+		
+		list_of_10ks = ["https://www.sec.gov/cgi-bin/viewer?action=view" +
+		 "&cik=814586&accession_number=0001683168-17-000864&xbrl_type=v",
+		 "https://www.sec.gov/cgi-bin/viewer?action=view&cik=814586&" +
+		 "accession_number=0001683168-17-000858&xbrl_type=v",
+		 "https://www.sec.gov/cgi-bin/viewer?action=view&cik=814586&" + 
+		 "accession_number=0001072613-16-000724&xbrl_type=v",
+		 "https://www.sec.gov/cgi-bin/viewer?action=view&cik=814586&" + 
+		 "accession_number=0001072613-15-000376&xbrl_type=v",
+		 "https://www.sec.gov/cgi-bin/viewer?action=view&cik=814586&" + 
+		 "accession_number=0001072613-14-000203&xbrl_type=v",
+		 "https://www.sec.gov/cgi-bin/viewer?action=view&cik=814586&" + 
+		 "accession_number=0001072613-13-000192&xbrl_type=v",
+		 "https://www.sec.gov/cgi-bin/viewer?action=view&cik=814586&" +
+		 "accession_number=0001072613-12-000279&xbrl_type=v"
+		]
+
+		self.assertEqual(list_of_10ks, 
+			self.testScraper.find_filings('0000814586', type_='10-K',))
