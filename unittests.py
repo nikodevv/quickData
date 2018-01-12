@@ -7,11 +7,14 @@ class TestDataCreation(TestCase):
 	def setUp(self):
 		self.testScraper = DataScraper()
 
+	@skip
 	def test_maps_data_correctly(self):
 		data_dict = self.testScraper.get_data_from_table_link('1564408',
 			'https://www.sec.gov/Archives/edgar/data'
 			+ '/1564408/000156459017022434/R4.htm')
-
+		#. currently invalid test; needs some additional data added
+		
+		
 		correct_mapped_data = {
 		'Revenue': [128204,207937],
 		'Cost of revenue': [127780, 210710],
@@ -133,3 +136,8 @@ class TestFilings(TestCase):
 
 	def test_returns_dict(self):
 		self.assertIsInstance(self.testFilings.data, dict)
+
+	def test_set_latest_period(self):
+		self.testFilings.set_latest_period({'period1' :{'some':'object', 
+			'period2' : {'another': 'object'}}})
+		self.assertEqual(self.testFilings.latest_period, 'period1')

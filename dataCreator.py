@@ -36,7 +36,6 @@ class DataScraper():
 		for x in values:
 			try: temp_values.append(float(correctSign(x)))
 			except: temp_values.append(float(0))
-		print(len(temp_values))
 		return temp_values
 
 	def mapData(self, cik, line_items, values, link_to_table):
@@ -184,4 +183,28 @@ class Filings():
 				#print("executed correctly")
 			time_period = DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)
 			self.data[time_period['year'] + time_period['period_ended']] = temp_dict
-		print (self.data)
+
+	def organize_data(self, data):
+		set_latest_period
+
+		organized_data = {}
+		for x in data:
+			set_latest_period(x)
+
+	def set_latest_period(self, data):
+		"""
+		Helper function to remove logic from organize_data & improve readability.
+		Sets the company's latest filing date to self.latest_period
+		"""
+		self.latest_period = ''
+		for period in data:
+			if (self.latest_period == ''):
+				self.latest_period = period
+				break
+
+	def clean_data(self):
+		"""
+		Removes common unecessary line items that were scrapped
+		as an unintentional byproduct
+		"""
+		pass
