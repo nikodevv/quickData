@@ -5,7 +5,7 @@ import re
 class DataScraper():
 	"""Scraps income statement of a given company, aligning historical data"""
 
-	def get_data_from_table_link(self, link_to_table):
+	def get_data_from_table_link(self, cik, link_to_table):
 		"""
 		Returns dictionary containing data table such that
 		{'line item' : [current yr and period value, last year and period value]}
@@ -15,7 +15,8 @@ class DataScraper():
 		tree = DataScraper.create_tree(self, link_to_table)
 		line_items = tree.xpath('//td[@class="pl "]/a/text()')
 		values = tree.xpath('//td[@class="nump" or @class="num"]/text()')		
-		return DataScraper.mapData(self, line_items, DataScraper.format_values(self, values), link_to_table)
+		return DataScraper.mapData(self, cik, line_items, 
+			DataScraper.format_values(self, values), link_to_table)
 
 	def create_tree(self, link):
 		"""returns tree that can be searched via xpath"""
@@ -34,10 +35,23 @@ class DataScraper():
 		values = [x.replace(',' , '') for x in values]
 		return [float(correctSign(x)) for x in values]
 
-	def mapData(self, line_items, values, link_to_table):
+	def mapData(self, cik, line_items, values, link_to_table):
 		# helper function; combines names & values into a single
-		# dictionary
+		# dictionary. Since SEC filings for Q1 and FY look different than 
+		# all other filings (tables have 2 columns fewer), scraping rules
+		# vary
 		tempValues = []
+		period_ended = DataScraper.get_fiscal_year_and_quarter(self, 
+			cik, link_to_table, from_table_link=True)['period_ended']
+		
+		if period_ended == 'Q1' or period_ended == 'FY':
+			print(values)
+			print(line_items)
+			for i in range(0, len(values), 2):
+				#print(line_items[0])
+				tempValues.append([values[i+1], values[i]])
+			return dict(zip(line_items, tempValues))
+
 		for i in range(0, len(values), 4):
 			tempValues.append([values[i+1], values[i]])
 		return dict(zip(line_items, tempValues))
@@ -159,8 +173,10 @@ class Filings():
 			temp_dict = {} 
 			# iterating over each financial statement in a given filing
 			for x in filing_link:
+				print(x + " in year " + str(DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)))
 				temp_dict[x] = DataScraper.get_data_from_table_link(self, 
-					filing_link[x])
+					self.cik, filing_link[x])
+				print("executed correctly")
 			time_period = DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)
 			self.data[time_period['year'] + time_period['period_ended']] = temp_dict
 		#print (self.data)

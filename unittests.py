@@ -8,7 +8,7 @@ class TestDataCreation(TestCase):
 		self.testScraper = DataScraper()
 
 	def test_maps_data_correctly(self):
-		data_dict = self.testScraper.get_data_from_table_link(
+		data_dict = self.testScraper.get_data_from_table_link('1564408',
 			'https://www.sec.gov/Archives/edgar/data'
 			+ '/1564408/000156459017022434/R4.htm')
 
@@ -33,7 +33,7 @@ class TestDataCreation(TestCase):
 
 	def test_values_correctly_formated(self):
 		# tests the format_values function indirectly
-		data_dict = self.testScraper.get_data_from_table_link(
+		data_dict = self.testScraper.get_data_from_table_link( '1564408',
 			'https://www.sec.gov/Archives/edgar/data'
 			+ '/1564408/000156459017022434/R4.htm')
 		for x in data_dict:
