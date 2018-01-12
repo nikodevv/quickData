@@ -14,7 +14,6 @@ class DataScraper():
 		self.values = self.format_values(self.values)		
 		self.mappedData = self.mapData()
 
-
 	def format_values(self, values):
 		"""makes sure the values elements of raw data are all valid integers 
 		except per share amounts, which are valid"""
@@ -51,28 +50,10 @@ class DataScraper():
 		filing_links = [f'https://www.sec.gov{x}' for x in filing_links]
 		return filing_links
 
-	def create_reports(self, cik, filing_type='10-'):
-		pass
-
-	def gets_tables_from_find_filings(self, cik, filing_type='10-', 
-		table_type='all'):
-		"""
-		Finds links to each table corresponding to a particular filing type.
-		Currently table_type parameter cannot take any features except "all" 
-		(feature is awaiting implementation)
-		"""
-		
-		table_links = {}
-		list_of_filings = find_filings(self, cik, filing_type=filing_type)
-		for x in list_of_filings:
-			extract_links_to_tables_from_link_to_filing(cik, x)
-
 	def extract_accession_number_from_filings_link(self, link_to_filing, 
 		unformatted=False):
 		"""
-		Takes a link to interactive SEC filing and returns accession #. 
-		If given umformatted = True, then the accession number is returned
-		with "-" characters included; otherwise only number characters
+		Takes a link to interactive SEC filing and returns accession #
 		"""
 		try:
 			accession_number = re.search('accession_number=(.+?)&', 
@@ -84,7 +65,58 @@ class DataScraper():
 		if unformatted == True:
 			return accession_number
 		return re.sub('[-]', '', accession_number)
-			
+
+	def get_tables_for_one_filing(self, cik, link_to_filing):
+
+		def generate_url(counter, cik, accession_number):
+			# helper function
+			# generates random urls and adds them to dictionary if 
+			# they correspond to a financial statement table for filing which
+			# is fond via accession_number
+			url = (f'https://www.sec.gov/Archives/edgar/data/{cik}/' +
+				f'{accession_number}/R{counter}.htm')
+			page = requests.get(url)
+			if ('Consolidated Statements of Operations' in page.text):
+				if not('revenue' in link_dict):
+					link_dict['revenue'] = url
+			elif ('Consolidated Balance Sheets' in page.text):
+				if not('balance' in link_dict):
+					link_dict['balance'] = url
+			elif ('Consolidated Statements of Cash' in page.text):
+				if not('cfs' in link_dict):
+					link_dict['cfs'] = url
+
+		accession_number = self.extract_accession_number_from_filings_link(
+			link_to_filing)
+		link_dict = {}
+		counter = 1
+
+		while True:
+			generate_url(counter, cik, accession_number)
+			# Once all 3 statements are found the loop is exited
+			if ('revenue' in link_dict) and ('balance' in link_dict) and (
+				'cfs' in link_dict):
+				return link_dict
+
+			# exit conditions if code does not perform as expected
+			if counter > 50:
+				raise Exception("get_tables_for_one_filing error:" + 
+					"Couldn't locate full financial statements")
+			counter = counter + 1 
+		return link_dict
+
+	def get_all_tables_from_find_filings(self, cik, filing_type='10-', 
+		table_type='all'):
+		"""
+		Returns list of links to filing data tables.
+		Currently table_type parameter cannot take any features except "all" 
+		(feature is awaiting implementation)
+		"""
+		table_links = {}
+		list_of_filings = find_filings(self, cik, filing_type=filing_type)
+		for x in list_of_filings:
+			extract_links_to_tables_from_link_to_filing(cik, x)
+		
 	def create_tree(self, link):
 		"""returns tree that can be searched via xpath"""
 		return fromstring(requests.get(link).content)

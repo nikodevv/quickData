@@ -114,13 +114,25 @@ class TestDataCreation(TestCase):
 			, correct_mapped_data)
 
 	def test_returns_correct_accession_numbers(self):
-		self.assertEqual(self.testScraper.
-			extract_accession_number_from_filings_link(
+		self.assertEqual(
+			self.testScraper.extract_accession_number_from_filings_link(
 			"https://www.sec.gov/cgi-bin/viewer?action=view&cik=1564408&"
 			+ "accession_number=0001564590-17-022434&xbrl_type=v", 
 			unformatted=True), '0001564590-17-022434')
-		self.assertEqual(self.testScraper.
-			extract_accession_number_from_filings_link(
+		self.assertEqual(
+			self.testScraper.extract_accession_number_from_filings_link(
 			"https://www.sec.gov/cgi-bin/viewer?action=view&cik=1564408&"
 			+"accession_number=0001564590-17-022434&xbrl_type=v"),
 			'000156459017022434')
+
+	def test_gets_tables_for_one_filing(self):
+		link_to_filing = ("https://www.sec.gov/cgi-bin/viewer?action=view&" + 
+			"cik=1564408&accession_number=0001564590-17-022434&xbrl_type=v")
+		list_of_filings = self.testScraper.get_tables_for_one_filing(
+			'1564408', link_to_filing)
+		self.assertEqual("https://www.sec.gov/Archives/edgar/data/1564408/"
+			+ "000156459017022434/R4.htm",list_of_filings['revenue'])
+		self.assertEqual("https://www.sec.gov/Archives/edgar/data/1564408/"
+			+ "000156459017022434/R2.htm",list_of_filings['balance'])
+		self.assertEqual("https://www.sec.gov/Archives/edgar/data/1564408/"
+			+ "000156459017022434/R6.htm",list_of_filings['cfs'])
