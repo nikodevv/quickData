@@ -184,4 +184,4 @@ class Filings():
 				#print("executed correctly")
 			time_period = DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)
 			self.data[time_period['year'] + time_period['period_ended']] = temp_dict
-		#print (self.data)
+		print (self.data)
