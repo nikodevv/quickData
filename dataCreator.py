@@ -77,6 +77,7 @@ class DataScraper():
 	def get_tables_for_one_filing(self, cik, link_to_filing):
 		"""gives a python dictionary corresponding to the data tables of 
 		a specific filing's link"""
+		
 		def generate_url(counter, cik, accession_number):
 			# helper function
 			# generates random urls and adds them to dictionary if 
@@ -132,11 +133,8 @@ class DataScraper():
 				fy_q_dict['period_ended'] = 'Q3'
 			elif 'FY' in x:
 				fy_q_dict['period_ended'] = 'FY'
-
 		return fy_q_dict
-
-
-		return #$#### make it return quarter and year
+		
 	def get_all_tables_from_find_filings(self, cik, filing_type='10-', 
 		table_type='all'):
 		"""
