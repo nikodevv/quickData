@@ -4,8 +4,6 @@ import re
 
 class DataScraper():
 	"""Scraps income statement of a given company, aligning historical data"""
-	def __init__(self,cik):
-		self.cik = cik
 
 	def get_data_from_table_link(self, link_to_table):
 		"""
@@ -14,10 +12,10 @@ class DataScraper():
 		example:
 		{'revenue': [amt of revenue Q2 of 2017, amt of revenue Q2 of 2016]}
 		"""
-		tree = self.create_tree(link_to_table)
+		tree = DataScraper.create_tree(self, link_to_table)
 		line_items = tree.xpath('//td[@class="pl "]/a/text()')
 		values = tree.xpath('//td[@class="nump" or @class="num"]/text()')		
-		return self.mapData(line_items, self.format_values(values))
+		return DataScraper.mapData(self, line_items, DataScraper.format_values(self, values), link_to_table)
 
 	def create_tree(self, link):
 		"""returns tree that can be searched via xpath"""
@@ -36,7 +34,7 @@ class DataScraper():
 		values = [x.replace(',' , '') for x in values]
 		return [float(correctSign(x)) for x in values]
 
-	def mapData(self, line_items, values):
+	def mapData(self, line_items, values, link_to_table):
 		# helper function; combines names & values into a single
 		# dictionary
 		tempValues = []
@@ -46,7 +44,7 @@ class DataScraper():
 
 	def find_filings(self, cik, filing_type="10-"):
 		"""
-		returns links to all financial filings which are available for
+		Returns links to all financial filings which are available for
 		scrapping for a given cik. The type of filigns can be filtered for via
 		type_. i.e. type_ = '10-K', will only return 10-Ks 	
 		"""
@@ -63,17 +61,20 @@ class DataScraper():
 		"""
 		Takes a link to interactive SEC filing and returns accession #
 		"""
-		try:
-			accession_number = re.search('accession_number=(.+?)&', 
-				link_to_filing).group(1)
-		except:
-			raise Exception("extract_links_to_tables_from_link_failing error:"
-				+"Couldn't find apporopriate accession number from link")
-
+		accession_number = re.search('accession_number=(.+?)&', 
+			link_to_filing).group(1)
 		if unformatted == True:
 			return accession_number
 		return re.sub('[-]', '', accession_number)
 
+	def extract_accession_number_from_table_link(self,link_to_table):
+		"""
+		Takes a link to SEC filing table and returns accession #
+		"""
+		accession_number = re.search('/[0-9]+?/(.+?)/', 
+			link_to_table).group(1)
+		return accession_number
+		
 	def get_tables_for_one_filing(self, cik, link_to_filing):
 		"""gives a python dictionary corresponding to the data tables of 
 		a specific filing's link"""
@@ -96,7 +97,7 @@ class DataScraper():
 				if not('cfs' in link_dict):
 					link_dict['cfs'] = url
 
-		accession_number = self.extract_accession_number_from_filings_link(
+		accession_number = DataScraper.extract_accession_number_from_filings_link(self,
 			link_to_filing)
 		link_dict = {}
 		counter = 1
@@ -115,12 +116,18 @@ class DataScraper():
 			counter = counter + 1 
 		return link_dict
 
-	def get_fiscal_year_and_quarter(self, cik, link_to_filing):
-		accession_number = self.extract_accession_number_from_filings_link(
-			link_to_filing)
+	def get_fiscal_year_and_quarter(self, cik, link_to_filing, from_table_link=False):
+		# used internally with from_table_link = False
+		if from_table_link == False:
+			accession_number = DataScraper.extract_accession_number_from_filings_link(self,
+				link_to_filing)
+		# if_link_to_filing corresponds to a table url (used by Filings class):
+		else:
+			accession_number = DataScraper.extract_accession_number_from_table_link(self,
+				link_to_filing)
 		url = (f'https://www.sec.gov/Archives/edgar/data/{cik}/' +
 				f'{accession_number}/R1.htm')
-		tree = self.create_tree(url)
+		tree = DataScraper.create_tree(self, url)
 		fy_q_dict = {}
 		for x in [cell.text_content().strip() for cell in tree.xpath('//td[@class="text"]')]:
 			if ',' in x:
@@ -134,20 +141,26 @@ class DataScraper():
 			elif 'FY' in x:
 				fy_q_dict['period_ended'] = 'FY'
 		return fy_q_dict
-		
-	def get_all_tables_from_find_filings(self, cik, filing_type='10-', 
-		table_type='all'):
-		"""
-		Returns list of links to filing data tables.
-		Currently table_type parameter cannot take any features except "all" 
-		(feature is awaiting implementation)
-		"""
-		table_links = {}
-		list_of_filings = find_filings(self, cik, filing_type=filing_type)
-		for x in list_of_filings:
-			extract_links_to_tables_from_link_to_filing(cik, x)
-		
 
+class Filings():
+	"""
+	A data structure that holds all the information relevant to a given
+	company's financials in the form of a dictionary
+	"""
+	def __init__(self, cik):
+		self.cik = cik
+		self.data = {}
+		self.collect_data()
 
-class DataProcessor():
-	pass
+	def collect_data(self):
+		all_filings_links = [DataScraper.get_tables_for_one_filing(self, self.cik, x) for x in DataScraper.find_filings(self, self.cik)]
+		for filing_link in all_filings_links:
+			# temporary data store before data is copied to self.data
+			temp_dict = {} 
+			# iterating over each financial statement in a given filing
+			for x in filing_link:
+				temp_dict[x] = DataScraper.get_data_from_table_link(self, 
+					filing_link[x])
+			time_period = DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)
+			self.data[time_period['year'] + time_period['period_ended']] = temp_dict
+		#print (self.data)

@@ -1,12 +1,11 @@
 from unittest import TestCase, skip
-from dataCreator import DataScraper
+from dataCreator import DataScraper, Filings
 
 class TestDataCreation(TestCase):
 	"""Tests scrapping of EDGAR website"""
 
 	def setUp(self):
-		self.testScraper = DataScraper('https://www.sec.gov/Archives/edgar/data'
-			+ '/1564408/000156459017022434/R4.htm') # Snapchat Sept 30 2017 10-Q
+		self.testScraper = DataScraper()
 
 	def test_maps_data_correctly(self):
 		data_dict = self.testScraper.get_data_from_table_link(
@@ -90,7 +89,7 @@ class TestDataCreation(TestCase):
 		self.assertEqual(list_of_10ks, 
 			self.testScraper.find_filings('0000814586', filing_type='10-K',))
 
-	def test_returns_correct_accession_numbers(self):
+	def test_returns_correct_accession_number_from_filings_link(self):
 		self.assertEqual(
 			self.testScraper.extract_accession_number_from_filings_link(
 			"https://www.sec.gov/cgi-bin/viewer?action=view&cik=1564408&"
@@ -100,6 +99,13 @@ class TestDataCreation(TestCase):
 			self.testScraper.extract_accession_number_from_filings_link(
 			"https://www.sec.gov/cgi-bin/viewer?action=view&cik=1564408&"
 			+"accession_number=0001564590-17-022434&xbrl_type=v"),
+			'000156459017022434')
+
+	def test_returns_correct_accession_number_from_table_link(self):
+		self.assertEqual(
+			self.testScraper.extract_accession_number_from_table_link(
+				"https://www.sec.gov/Archives/edgar/data/1564408/" +
+				"000156459017022434/R4.htm"),
 			'000156459017022434')
 
 	def test_gets_tables_for_one_filing(self):
@@ -120,4 +126,10 @@ class TestDataCreation(TestCase):
 			+ "&accession_number=0001564590-17-022434&xbrl_type=v#")
 		self.assertEqual(f_q['year'], '2017')
 		self.assertEqual(f_q['period_ended'], 'Q3')
-				
+
+class TestFilings(TestCase):
+	def setUp(self):
+		self.testFilings = Filings('1564408')
+
+	def test_returns_dict(self):
+		self.assertIsInstance(self.testFilings.data, dict)
