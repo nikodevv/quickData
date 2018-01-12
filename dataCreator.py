@@ -1,6 +1,7 @@
 from lxml.html import fromstring
 import requests
 import re
+import fuzzywuzzy
 
 class DataScraper():
 	"""Scraps income statement of a given company, aligning historical data"""
@@ -185,7 +186,7 @@ class Filings():
 			self.data[time_period['year'] + time_period['period_ended']] = temp_dict
 
 	def organize_data(self, data):
-		set_latest_period
+		set_latest_period(self)
 
 		organized_data = {}
 		for x in data:
