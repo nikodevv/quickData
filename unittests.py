@@ -8,13 +8,11 @@ class TestDataCreation(TestCase):
 		self.testScraper = DataScraper('https://www.sec.gov/Archives/edgar/data'
 			+ '/1564408/000156459017022434/R4.htm') # Snapchat Sept 30 2017 10-Q
 
-	def test_can_pull_data_from_link(self):
-		self.assertTrue(self.testScraper.line_items)
-		self.assertTrue(self.testScraper.values)
-		self.assertIn(self.testScraper.line_items[-1],'Diluted')
-
 	def test_maps_data_correctly(self):
-		self.maxDiff = None
+		data_dict = self.testScraper.get_data_from_table_link(
+			'https://www.sec.gov/Archives/edgar/data'
+			+ '/1564408/000156459017022434/R4.htm')
+
 		correct_mapped_data = {
 		'Revenue': [128204,207937],
 		'Cost of revenue': [127780, 210710],
@@ -32,15 +30,16 @@ class TestDataCreation(TestCase):
 		'Basic': [float(-0.15),float(-0.36)],
 		'Diluted': [float(-0.15), float(-0.36)]
 		}
-		self.assertDictEqual(self.testScraper.mappedData, correct_mapped_data)
-
-	@skip
-	def test_output_data(self):
-		self.fail(self.testScraper.line_items)
+		self.assertDictEqual(data_dict, correct_mapped_data)
 
 	def test_values_correctly_formated(self):
-		for x in self.testScraper.values:
-			self.assertIsInstance(x,float)
+		# tests the format_values function indirectly
+		data_dict = self.testScraper.get_data_from_table_link(
+			'https://www.sec.gov/Archives/edgar/data'
+			+ '/1564408/000156459017022434/R4.htm')
+		for x in data_dict:
+			self.assertIsInstance(data_dict[x][0],float)
+			self.assertIsInstance(data_dict[x][1],float)
 
 	def test_can_find_company_documents_from_cik(self):
 		cik = '1564408'
@@ -91,28 +90,6 @@ class TestDataCreation(TestCase):
 		self.assertEqual(list_of_10ks, 
 			self.testScraper.find_filings('0000814586', filing_type='10-K',))
 
-	def test_can_create_filings(self):
-		self.maxDiff = None
-		correct_mapped_data = {
-		'Revenue': [128204,207937],
-		'Cost of revenue': [127780, 210710],
-		'Research and development': [54562, 239442],
-		'Sales and marketing': [34658, 101511],
-		'General and administrative': [42172, 118101],
-		'Total costs and expenses': [259172, 669764],
-		'Loss from operations': [-130968, -461827],
-		'Interest income': [1938, 6253],
-		'Interest expense': [-648,-887],
-		'Other income (expense), net': [-1421, 1002],
-		'Loss before income taxes': [-131099, -455459],
-		'Income tax benefit (expense)': [6871, 12300],
-		'Net loss': [-124228, -443159],
-		'Basic': [float(-0.15),float(-0.36)],
-		'Diluted': [float(-0.15), float(-0.36)]
-		}
-		self.assertDictEqual(self.testScraper.mappedData
-			, correct_mapped_data)
-
 	def test_returns_correct_accession_numbers(self):
 		self.assertEqual(
 			self.testScraper.extract_accession_number_from_filings_link(
@@ -136,3 +113,11 @@ class TestDataCreation(TestCase):
 			+ "000156459017022434/R2.htm",list_of_filings['balance'])
 		self.assertEqual("https://www.sec.gov/Archives/edgar/data/1564408/"
 			+ "000156459017022434/R6.htm",list_of_filings['cfs'])
+
+	def test_gets_correct_time_period(self):
+		f_q = self.testScraper.get_fiscal_year_and_quarter('1564408',
+			"https://www.sec.gov/cgi-bin/viewer?action=view&cik=1564408"
+			+ "&accession_number=0001564590-17-022434&xbrl_type=v#")
+		self.assertEqual(f_q['year'], '2017')
+		self.assertEqual(f_q['period_ended'], 'Q3')
+				

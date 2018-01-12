@@ -4,19 +4,28 @@ import re
 
 class DataScraper():
 	"""Scraps income statement of a given company, aligning historical data"""
-	def __init__(self,company_IS_data_link):
-		self.main(company_IS_data_link)
+	def __init__(self,cik):
+		self.cik = cik
 
-	def main(self,company_IS_data_link):
-		self.tree = self.create_tree(company_IS_data_link)
-		self.line_items = self.tree.xpath('//td[@class="pl "]/a/text()')
-		self.values = self.tree.xpath('//td[@class="nump" or @class="num"]/text()')
-		self.values = self.format_values(self.values)		
-		self.mappedData = self.mapData()
+	def get_data_from_table_link(self, link_to_table):
+		"""
+		Returns dictionary containing data table such that
+		{'line item' : [current yr and period value, last year and period value]}
+		example:
+		{'revenue': [amt of revenue Q2 of 2017, amt of revenue Q2 of 2016]}
+		"""
+		tree = self.create_tree(link_to_table)
+		line_items = tree.xpath('//td[@class="pl "]/a/text()')
+		values = tree.xpath('//td[@class="nump" or @class="num"]/text()')		
+		return self.mapData(line_items, self.format_values(values))
+
+	def create_tree(self, link):
+		"""returns tree that can be searched via xpath"""
+		return fromstring(requests.get(link).content)
 
 	def format_values(self, values):
-		"""makes sure the values elements of raw data are all valid integers 
-		except per share amounts, which are valid"""
+		# helper function; makes sure the values elements of raw data are all 
+		# valid types
 		def correctSign(x):
 			if x[0] == "(":
 				return '-'+x.strip('(').strip(')')
@@ -27,14 +36,13 @@ class DataScraper():
 		values = [x.replace(',' , '') for x in values]
 		return [float(correctSign(x)) for x in values]
 
-	def mapData(self):
-		"""used in initialization -- combines names & values into a single
-		dictionary"""
+	def mapData(self, line_items, values):
+		# helper function; combines names & values into a single
+		# dictionary
 		tempValues = []
-		for i in range(0, len(self.values), 4):
-			tempValues.append([self.values[i+1],self.values[i]])
-
-		return dict(zip(self.line_items, tempValues))
+		for i in range(0, len(values), 4):
+			tempValues.append([values[i+1], values[i]])
+		return dict(zip(line_items, tempValues))
 
 	def find_filings(self, cik, filing_type="10-"):
 		"""
@@ -67,7 +75,8 @@ class DataScraper():
 		return re.sub('[-]', '', accession_number)
 
 	def get_tables_for_one_filing(self, cik, link_to_filing):
-
+		"""gives a python dictionary corresponding to the data tables of 
+		a specific filing's link"""
 		def generate_url(counter, cik, accession_number):
 			# helper function
 			# generates random urls and adds them to dictionary if 
@@ -105,6 +114,29 @@ class DataScraper():
 			counter = counter + 1 
 		return link_dict
 
+	def get_fiscal_year_and_quarter(self, cik, link_to_filing):
+		accession_number = self.extract_accession_number_from_filings_link(
+			link_to_filing)
+		url = (f'https://www.sec.gov/Archives/edgar/data/{cik}/' +
+				f'{accession_number}/R1.htm')
+		tree = self.create_tree(url)
+		fy_q_dict = {}
+		for x in [cell.text_content().strip() for cell in tree.xpath('//td[@class="text"]')]:
+			if ',' in x:
+				fy_q_dict['year'] = re.search(', +(....)', x).group(1)
+			elif 'Q1' in x:
+				fy_q_dict['period_ended'] = 'Q1'
+			elif 'Q2' in x:
+				fy_q_dict['period_ended'] = 'Q2'
+			elif 'Q3' in x:
+				fy_q_dict['period_ended'] = 'Q3'
+			elif 'FY' in x:
+				fy_q_dict['period_ended'] = 'FY'
+
+		return fy_q_dict
+
+
+		return #$#### make it return quarter and year
 	def get_all_tables_from_find_filings(self, cik, filing_type='10-', 
 		table_type='all'):
 		"""
@@ -117,9 +149,7 @@ class DataScraper():
 		for x in list_of_filings:
 			extract_links_to_tables_from_link_to_filing(cik, x)
 		
-	def create_tree(self, link):
-		"""returns tree that can be searched via xpath"""
-		return fromstring(requests.get(link).content)
+
 
 class DataProcessor():
 	pass

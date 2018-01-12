@@ -1,3 +1,5 @@
 To - Do Items:
 
 * Add in units detection for values - i.e. in Thousands $ USD
+* consider taking out self.cik = cik from initalization -- currently unused but could be good for a refactor.
+ right now I don't see a point in keeping the DataScraper class as anything more than a library of functions
