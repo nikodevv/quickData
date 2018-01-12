@@ -13,8 +13,8 @@ class DataScraper():
 		{'revenue': [amt of revenue Q2 of 2017, amt of revenue Q2 of 2016]}
 		"""
 		tree = DataScraper.create_tree(self, link_to_table)
-		line_items = tree.xpath('//td[@class="pl "]/a/text()')
-		values = tree.xpath('//td[@class="nump" or @class="num"]/text()')		
+		line_items = tree.xpath('//td[@class="pl "]/a/text()|//td[@class="pl "]/a/strong/text()')
+		values = tree.xpath('//td[@class="nump" or @class="num" or @class="text"]/text()')		
 		return DataScraper.mapData(self, cik, line_items, 
 			DataScraper.format_values(self, values), link_to_table)
 
@@ -26,14 +26,18 @@ class DataScraper():
 		# helper function; makes sure the values elements of raw data are all 
 		# valid types
 		def correctSign(x):
-			if x[0] == "(":
+			if str(x)[0] == "(":
 				return '-'+x.strip('(').strip(')')
 			else:
 				return x
-
 		values = [x.strip('$ ') for x in values if x != '\n']
 		values = [x.replace(',' , '') for x in values]
-		return [float(correctSign(x)) for x in values]
+		temp_values = []
+		for x in values:
+			try: temp_values.append(float(correctSign(x)))
+			except: temp_values.append(float(0))
+		print(len(temp_values))
+		return temp_values
 
 	def mapData(self, cik, line_items, values, link_to_table):
 		# helper function; combines names & values into a single
@@ -41,12 +45,13 @@ class DataScraper():
 		# all other filings (tables have 2 columns fewer), scraping rules
 		# vary
 		tempValues = []
+		# Should refactor such that page is passed as an argument
+		page = requests.get(link_to_table)
 		period_ended = DataScraper.get_fiscal_year_and_quarter(self, 
 			cik, link_to_table, from_table_link=True)['period_ended']
-		
-		if period_ended == 'Q1' or period_ended == 'FY':
-			print(values)
-			print(line_items)
+		if (period_ended == 'Q1' or period_ended == 'FY' or 
+			'Consolidated Balance Sheets' in page.text or 
+			'Consolidated Statements of Cash' in page.text):
 			for i in range(0, len(values), 2):
 				#print(line_items[0])
 				tempValues.append([values[i+1], values[i]])
@@ -173,10 +178,10 @@ class Filings():
 			temp_dict = {} 
 			# iterating over each financial statement in a given filing
 			for x in filing_link:
-				print(x + " in year " + str(DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)))
+				#print(x + " in year " + str(DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)))
 				temp_dict[x] = DataScraper.get_data_from_table_link(self, 
 					self.cik, filing_link[x])
-				print("executed correctly")
+				#print("executed correctly")
 			time_period = DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)
 			self.data[time_period['year'] + time_period['period_ended']] = temp_dict
 		#print (self.data)
