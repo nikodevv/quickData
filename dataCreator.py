@@ -1,7 +1,7 @@
 from lxml.html import fromstring
 import requests
 import re
-import fuzzywuzzy
+from fuzzywuzzy import fuzz
 
 class DataScraper():
 	"""Scraps income statement of a given company, aligning historical data"""
@@ -11,7 +11,7 @@ class DataScraper():
 		Returns dictionary containing data table such that
 		{'line item' : [current yr and period value, last year and period value]}
 		example:
-		{'revenue': [amt of revenue Q2 of 2017, amt of revenue Q2 of 2016]}
+		{'income': [amt of income Q2 of 2017, amt of income Q2 of 2016]}
 		"""
 		tree = DataScraper.create_tree(self, link_to_table)
 		line_items = tree.xpath('//td[@class="pl "]/a/text()|//td[@class="pl "]/a/strong/text()')
@@ -107,8 +107,8 @@ class DataScraper():
 				f'{accession_number}/R{counter}.htm')
 			page = requests.get(url)
 			if ('Consolidated Statements of Operations' in page.text):
-				if not('revenue' in link_dict):
-					link_dict['revenue'] = url
+				if not('income' in link_dict):
+					link_dict['income'] = url
 			elif ('Consolidated Balance Sheets' in page.text):
 				if not('balance' in link_dict):
 					link_dict['balance'] = url
@@ -124,7 +124,7 @@ class DataScraper():
 		while True:
 			generate_url(counter, cik, accession_number)
 			# Once all 3 statements are found the loop is exited
-			if ('revenue' in link_dict) and ('balance' in link_dict) and (
+			if ('income' in link_dict) and ('balance' in link_dict) and (
 				'cfs' in link_dict):
 				return link_dict
 
@@ -168,29 +168,48 @@ class Filings():
 	"""
 	def __init__(self, cik):
 		self.cik = cik
-		self.data = {}
-		self.collect_data()
+		# statements corresponding to each FS type
+		self.statement_keys = ['balance', 'income', 'cfs'] 
+		self.collect_raw_data()
 
-	def collect_data(self):
+	def collect_raw_data(self):
+		self.raw_data = {}
 		all_filings_links = [DataScraper.get_tables_for_one_filing(self, self.cik, x) for x in DataScraper.find_filings(self, self.cik)]
 		for filing_link in all_filings_links:
-			# temporary data store before data is copied to self.data
+			# temporary data store before data is copied to self.raw_data
 			temp_dict = {} 
 			# iterating over each financial statement in a given filing
 			for x in filing_link:
-				#print(x + " in year " + str(DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)))
 				temp_dict[x] = DataScraper.get_data_from_table_link(self, 
 					self.cik, filing_link[x])
 				#print("executed correctly")
-			time_period = DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['revenue'], from_table_link=True)
-			self.data[time_period['year'] + time_period['period_ended']] = temp_dict
+			time_period = DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['income'], from_table_link=True)
+			self.raw_data[time_period['year'] + time_period['period_ended']] = temp_dict
 
 	def organize_data(self, data):
-		set_latest_period(self)
-
 		organized_data = {}
-		for x in data:
-			set_latest_period(x)
+		self.set_latest_period(data)
+
+	def select_data_creation_function(self,data,statement_type):
+		"""
+		uses correct function to compile financial data across time periods
+		"""
+		data = {}
+		if statement_type == 'balance':
+			self.compile_balance_sheets(data)
+		elif statement_type == 'income':
+			self.compile_income_statement(data)
+		elif statement_type == 'cfs':
+			self.compile_cfs(data)
+
+	def compile_income_statement(self, data):
+		self.income = {}
+	
+	def compile_balance_sheets(self):
+		self.income = {}
+
+	def compile_cfs(self):
+		self.income = {}
 
 	def set_latest_period(self, data):
 		"""
@@ -202,6 +221,13 @@ class Filings():
 			if (self.latest_period == ''):
 				self.latest_period = period
 				break
+
+	def get_row_labels(self, data, statement_type):
+		"""
+		Determines what the labels for each row will be. Must be executed after
+		set_latest_period
+		"""
+		return [filing[0] for filing in self.raw_data[self.latest_period][statement_type]]
 
 	def clean_data(self):
 		"""

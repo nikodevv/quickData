@@ -117,7 +117,7 @@ class TestDataCreation(TestCase):
 		list_of_filings = self.testScraper.get_tables_for_one_filing(
 			'1564408', link_to_filing)
 		self.assertEqual("https://www.sec.gov/Archives/edgar/data/1564408/"
-			+ "000156459017022434/R4.htm",list_of_filings['revenue'])
+			+ "000156459017022434/R4.htm",list_of_filings['income'])
 		self.assertEqual("https://www.sec.gov/Archives/edgar/data/1564408/"
 			+ "000156459017022434/R2.htm",list_of_filings['balance'])
 		self.assertEqual("https://www.sec.gov/Archives/edgar/data/1564408/"
@@ -132,12 +132,26 @@ class TestDataCreation(TestCase):
 
 class TestFilings(TestCase):
 	def setUp(self):
-		self.testFilings = Filings('1564408')
+		self.testFilings = Filings('1564408') # Snapchat cik
 
 	def test_returns_dict(self):
-		self.assertIsInstance(self.testFilings.data, dict)
+		self.assertIsInstance(self.testFilings.raw_data, dict)
 
 	def test_set_latest_period(self):
 		self.testFilings.set_latest_period({'period1' :{'some':'object', 
 			'period2' : {'another': 'object'}}})
 		self.assertEqual(self.testFilings.latest_period, 'period1')
+
+	def test_returns_row_labels(self):
+		self.testFilings.set_latest_period(self.testFilings.raw_data)
+		self.assertIsInstance(
+			self.testFilings.get_row_labels(self.testFilings.raw_data,
+				self.testFilings.statement_keys[0]),
+			list)
+		self.assertIsInstance(
+			self.testFilings.get_row_labels(self.testFilings.raw_data,
+				self.testFilings.statement_keys[1])[0],
+			str)
+	def test_picks_correct_compilation_function(self):
+		self.fail("incomplete test")
+		# tests select_data_creation_function
