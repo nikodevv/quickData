@@ -2,7 +2,6 @@ from lxml.html import fromstring
 import requests
 import re
 from fuzzywuzzy import fuzz
-
 class DataScraper():
 	"""Scraps income statement of a given company, aligning historical data"""
 
@@ -167,9 +166,12 @@ class Filings():
 	"""
 	def __init__(self, cik):
 		self.cik = cik
-		# statements corresponding to each FS type
-		self.statement_keys = ['balance', 'income', 'cfs'] 
 		self.collect_raw_data()
+
+		# keeps track of index of inserted "other" accounts not in
+		# originial statement
+		self.set_latest_period(self.raw_data)
+		self.statement_splicer_index = {}
 
 	def collect_raw_data(self):
 		"""
@@ -216,33 +218,82 @@ class Filings():
 			# i.e. for 2017 quarter one, raw_data['2017Q1'] = temp_dict
 			self.raw_data[time_period['year'] + time_period['period_ended']] = temp_dict
 
-	def organize_data(self, data):
-		"""currently unused"""
-		organized_data = {}
-		self.set_latest_period(data)
+	def get_row_labels(self, statement_type):
+		"""
+		Determines what the "raw" labels of each table
+		(i.e. excludes any additional rows not in the filing)
+		"""
+		return [key for key in self.raw_data[self.latest_period][statement_type]]
 
-	def select_data_creation_function(self,data,statement_type):
+	def prepare_row_labels(self, statement_type, statement_splicers, add_accounts):
 		"""
-		uses correct function to compile financial data across time periods
+		Calls get_row_labels and adds in 'other' accounts necessary
+		for compiling multiple time periods into one chart
 		"""
-		data = {}
+		self.row_labels = []
+		for rowname in self.get_row_labels(statement_type):
+			
+			if statement_splicers != []:
+
+				if statement_splicers[0] in rowname:
+					#print('rowname is:' + rowname)
+					self.row_labels.append(add_accounts[0])
+					self.row_labels.append(rowname)
+					statement_splicers.pop(0)
+				else:
+					#print('no match. rowname is:' + rowname + ", and statement_splicers[0] is: " +statement_splicers[0] )
+					self.row_labels.append(rowname)
+			else:
+				#print('no match. rowname is:' + rowname + ", and statement_splicers[0] is: " +statement_splicers[0] )
+				self.row_labels.append(rowname)
+
+		if statement_splicers != []:
+			raise FinancialStandardError()
+
+
+
+	def select_data_creation_function(self, data_table, statement_type):
+		"""
+		Passes a data_table (dictionary) to the correct "compilation" function
+		based on the statement_type.
+		"""
 		if statement_type == 'balance':
-			self.compile_balance_sheets(data)
+			self.compile_balance_sheets(statement)
 		elif statement_type == 'income':
+			self.income_rows = self.prepare_row_labels('income', ['operati', 'taxes'], 
+				['other operating income', 'other IS items'])
 			self.compile_income_statement(data)
 		elif statement_type == 'cfs':
 			self.compile_cfs(data)
-	#idk what this is
+		# idk what this is
 	
-	def compile_income_statement(self, data):
-		self.income = {}
-		for row in get_row_labels(data, 'income'):
-			self.income[row] = find_matching_values(row, data, 'income') # not yet a function
+	def compile_income_statement(self, data_table):
+		"""
+		creates a list of values that fits in with the predesignated self.income_rows
+		"""
+		#operati is a partial string for operti[ng income] and [income from] operati[ons]
 
-			### if x has passed something that will be on most income statements
-			#idk what this is
-	
-	def find_matching_values(str_to_match, data, statement_type):
+		self.income = []
+
+		# for rowname in self.income_rows:
+		# 	for item in data_table:	
+		# 		if data_table[item] not in statement_splicers[0]:
+		# 			pass
+		# 			#self.income.append[] = find_matching_values(rowname, data, 'income') # not yet a function, need to take year in consideration
+		# 		else:
+		# 			pass
+
+
+	def find_matching_values(str_to_match, data_table, statement_type, statement_splicers):
+		"""
+		Determines whether to match values with an old account, or
+		to place it in a custom created (i.e. not a part of the 
+		original account) "OTHER" account.
+		Takes statement_type as argument soely for dictionary
+		manipulation.
+		"""
+		#if invalid_entry()==True:
+			#return 0? idk some kind of empty shit
 		temp_dict = []
 		for period in data:
 			counter = 0
@@ -258,7 +309,6 @@ class Filings():
 
 	def set_latest_period(self, data):
 		"""
-		Helper function to remove logic from organize_data & improve readability.
 		Sets the company's latest filing date to self.latest_period
 		"""
 		self.latest_period = ''
@@ -267,12 +317,6 @@ class Filings():
 				self.latest_period = period
 				break
 
-	def get_row_labels(self, data, statement_type):
-		"""
-		Determines what the labels for each row will be. Must be executed after
-		set_latest_period
-		"""
-		return [filing[0] for filing in self.raw_data[self.latest_period][statement_type]]
 
 	def clean_data(self):
 		"""
@@ -280,3 +324,12 @@ class Filings():
 		as an unintentional byproduct
 		"""
 		pass
+
+
+
+class FinancialStandardError(Exception):
+    def __init__(self):
+        self.message = ("This company's financial statements deviate too far" + 
+				"from common reporting methods. If you notify me of this company's "
+				"cik and name on github (@nikodevv), I can work on improving the"
+				"parsing algorithms")

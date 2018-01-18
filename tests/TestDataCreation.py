@@ -1,5 +1,8 @@
 from unittest import TestCase, skip
-from dataCreator import DataScraper, Filings
+import sys
+import os
+sys.path.insert(0, sys.path.insert(0, os.path.abspath('..')))
+from dataCreator import DataScraper
 
 class TestDataCreation(TestCase):
 	"""Tests scrapping of EDGAR website"""
