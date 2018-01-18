@@ -111,6 +111,7 @@ class TestDataCreation(TestCase):
 				"000156459017022434/R4.htm"),
 			'000156459017022434')
 
+	@skip
 	def test_gets_tables_for_one_filing(self):
 		link_to_filing = ("https://www.sec.gov/cgi-bin/viewer?action=view&" + 
 			"cik=1564408&accession_number=0001564590-17-022434&xbrl_type=v")
@@ -136,6 +137,7 @@ class TestFilings(TestCase):
 
 	def test_returns_dict(self):
 		self.assertIsInstance(self.testFilings.raw_data, dict)
+		print(self.testFilings.raw_data[])
 
 	def test_set_latest_period(self):
 		self.testFilings.set_latest_period({'period1' :{'some':'object', 
@@ -152,6 +154,7 @@ class TestFilings(TestCase):
 			self.testFilings.get_row_labels(self.testFilings.raw_data,
 				self.testFilings.statement_keys[1])[0],
 			str)
+	@skip
 	def test_picks_correct_compilation_function(self):
 		self.fail("incomplete test")
-		# tests select_data_creation_function
+		# tests select_data_creation_function()

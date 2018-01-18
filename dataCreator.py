@@ -53,7 +53,6 @@ class DataScraper():
 			'Consolidated Balance Sheets' in page.text or 
 			'Consolidated Statements of Cash' in page.text):
 			for i in range(0, len(values), 2):
-				#print(line_items[0])
 				tempValues.append([values[i+1], values[i]])
 			return dict(zip(line_items, tempValues))
 
@@ -173,8 +172,38 @@ class Filings():
 		self.collect_raw_data()
 
 	def collect_raw_data(self):
+		"""
+		Takes all data from filings and stores it in a dictionary
+		of dictionaries.
+		
+		For example if a company, only has only been public for 
+		Q1 of 2017, the dictionary would have the following 
+		format:
+		self.raw_data = {
+			'2017Q1': filings_dictionary			
+		}
+		where filings_dictionary = {
+			'income' : {
+				'Revenue': '2000'
+				...all income statement items...
+				'Diluted' : '2000' # as in Basic EPS
+				}
+
+			'balance' : {
+				...all balance sheet items as in 'income'
+				key example...
+			}
+			'cfs' : {
+				...all statement of cashflows items as in 
+				'income' key example...
+			}
+		}
+		In the example above the values of 2000 are just placeholder for 
+		the company's actual reported amounts.
+		"""
 		self.raw_data = {}
-		all_filings_links = [DataScraper.get_tables_for_one_filing(self, self.cik, x) for x in DataScraper.find_filings(self, self.cik)]
+		all_filings_links = [DataScraper.get_tables_for_one_filing(self, 
+			self.cik, x) for x in DataScraper.find_filings(self, self.cik)]
 		for filing_link in all_filings_links:
 			# temporary data store before data is copied to self.raw_data
 			temp_dict = {} 
@@ -182,11 +211,13 @@ class Filings():
 			for x in filing_link:
 				temp_dict[x] = DataScraper.get_data_from_table_link(self, 
 					self.cik, filing_link[x])
-				#print("executed correctly")
-			time_period = DataScraper.get_fiscal_year_and_quarter(self, self.cik, filing_link['income'], from_table_link=True)
+			time_period = DataScraper.get_fiscal_year_and_quarter(self, 
+				self.cik, filing_link['income'], from_table_link=True)
+			# i.e. for 2017 quarter one, raw_data['2017Q1'] = temp_dict
 			self.raw_data[time_period['year'] + time_period['period_ended']] = temp_dict
 
 	def organize_data(self, data):
+		"""currently unused"""
 		organized_data = {}
 		self.set_latest_period(data)
 
@@ -201,15 +232,29 @@ class Filings():
 			self.compile_income_statement(data)
 		elif statement_type == 'cfs':
 			self.compile_cfs(data)
-
+	#idk what this is
+	
 	def compile_income_statement(self, data):
 		self.income = {}
+		for row in get_row_labels(data, 'income'):
+			self.income[row] = find_matching_values(row, data, 'income') # not yet a function
+
+			### if x has passed something that will be on most income statements
+			#idk what this is
 	
+	def find_matching_values(str_to_match, data, statement_type):
+		temp_dict = []
+		for period in data:
+			counter = 0
+			for item in data[period][statement_type]:
+				if fuzz.ratio(data[period][statement_type][item]) > 0.8:
+					pass
+
 	def compile_balance_sheets(self):
-		self.income = {}
+		self.balance = {}
 
 	def compile_cfs(self):
-		self.income = {}
+		self.cfs = {}
 
 	def set_latest_period(self, data):
 		"""
