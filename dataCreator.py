@@ -2,6 +2,8 @@ from lxml.html import fromstring
 import requests
 import re
 from fuzzywuzzy import fuzz
+import time # for testing runtime lengths; remove from distributions.  
+
 class DataScraper():
 	"""Scraps income statement of a given company, aligning historical data"""
 
@@ -171,8 +173,10 @@ class Filings():
 		# keeps track of index of inserted "other" accounts not in
 		# originial statement
 		self.set_latest_period(self.raw_data)
-		self.statement_splicer_index = {}
+		# unused - should store where additional accoutns were inserted
+		self.statement_splicer_index = {} 
 
+	# Execution time 6-7 sec on my machine for Snapchat.
 	def collect_raw_data(self):
 		"""
 		Takes all data from filings and stores it in a dictionary
@@ -203,19 +207,21 @@ class Filings():
 		In the example above the values of 2000 are just placeholder for 
 		the company's actual reported amounts.
 		"""
+
 		self.raw_data = {}
+		starttime = time.time()
 		all_filings_links = [DataScraper.get_tables_for_one_filing(self, 
 			self.cik, x) for x in DataScraper.find_filings(self, self.cik)]
+
+		starttime = time.time()
+
 		for filing_link in all_filings_links:
-			# temporary data store before data is copied to self.raw_data
 			temp_dict = {} 
-			# iterating over each financial statement in a given filing
 			for x in filing_link:
 				temp_dict[x] = DataScraper.get_data_from_table_link(self, 
 					self.cik, filing_link[x])
 			time_period = DataScraper.get_fiscal_year_and_quarter(self, 
 				self.cik, filing_link['income'], from_table_link=True)
-			# i.e. for 2017 quarter one, raw_data['2017Q1'] = temp_dict
 			self.raw_data[time_period['year'] + time_period['period_ended']] = temp_dict
 
 	def get_row_labels(self, statement_type):
@@ -230,27 +236,38 @@ class Filings():
 		Calls get_row_labels and adds in 'other' accounts necessary
 		for compiling multiple time periods into one chart
 		"""
-		self.row_labels = []
+		row_labels = []
 		for rowname in self.get_row_labels(statement_type):
 			
 			if statement_splicers != []:
 
 				if statement_splicers[0] in rowname:
 					#print('rowname is:' + rowname)
-					self.row_labels.append(add_accounts[0])
-					self.row_labels.append(rowname)
+					row_labels.append(add_accounts[0])
+					row_labels.append(rowname)
 					statement_splicers.pop(0)
 				else:
 					#print('no match. rowname is:' + rowname + ", and statement_splicers[0] is: " +statement_splicers[0] )
-					self.row_labels.append(rowname)
+					row_labels.append(rowname)
 			else:
 				#print('no match. rowname is:' + rowname + ", and statement_splicers[0] is: " +statement_splicers[0] )
-				self.row_labels.append(rowname)
+				row_labels.append(rowname)
 
 		if statement_splicers != []:
 			raise FinancialStandardError()
-
-
+		self.set_row_labels_in_self(statement_type, row_labels)
+	
+	def set_row_labels_in_self(self, statement_type, row_labels):
+		"""
+		Takes row_labels from prepare_row_labels and saves them in appropriate
+		instance variables.
+		"""
+		if statement_type == 'balance':
+			self.balance_row_labels = row_labels
+		elif statement_type == 'income':
+			self.income_row_labels = row_labels
+		elif statement_type == 'cfs':
+			self.cfs_row_labels = row_labels
 
 	def select_data_creation_function(self, data_table, statement_type):
 		"""
@@ -262,7 +279,7 @@ class Filings():
 		elif statement_type == 'income':
 			self.income_rows = self.prepare_row_labels('income', ['operati', 'taxes'], 
 				['other operating income', 'other IS items'])
-			self.compile_income_statement(data)
+			self.compile_income_statement(data_table)
 		elif statement_type == 'cfs':
 			self.compile_cfs(data)
 		# idk what this is
@@ -274,15 +291,9 @@ class Filings():
 		#operati is a partial string for operti[ng income] and [income from] operati[ons]
 
 		self.income = []
-
-		# for rowname in self.income_rows:
-		# 	for item in data_table:	
-		# 		if data_table[item] not in statement_splicers[0]:
-		# 			pass
-		# 			#self.income.append[] = find_matching_values(rowname, data, 'income') # not yet a function, need to take year in consideration
-		# 		else:
-		# 			pass
-
+		for rowname in data_table:
+			pass
+			# if rowname is close enough add to list
 
 	def find_matching_values(str_to_match, data_table, statement_type, statement_splicers):
 		"""
