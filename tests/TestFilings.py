@@ -46,9 +46,10 @@ class TestFilings(TestCase):
 
 
 	def test_run_compile_income_statement(self):
-		self.testFilings.prepare_row_labels('income', ['operati', 'taxes'], 
-			['other operating income', 'other IS items'])
-		data_col = self.testFilings.compile_income_statement(self.testFilings.raw_data['2017Q1']['income'], 'income')
+		self.testFilings.prepare_row_labels('balance', 
+			['Total assets', 'Total liabilities', "Total stockholders’ equity"], 
+			['other assets', 'other liabilities', "other equity"])
+		data_col = self.testFilings.compile_statement(self.testFilings.raw_data['2017Q2']['balance'], 'balance')
 		print(data_col)
 		print("^ that was data_col, now we print labels")
 		print(self.testFilings.income_row_labels)

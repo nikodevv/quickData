@@ -173,7 +173,14 @@ class Filings():
 		# keeps track of index of inserted "other" accounts not in
 		# originial statement
 		self.set_latest_period(self.raw_data)
-		# unused - should store where additional accoutns were inserted
+		self.statement_splicers = {
+			'balance': ['Total assets', 'Total liabilities', "Total stockholders’ equity"],
+			'income': ['operati', 'taxes']
+		}
+		self.add_accounts = {
+			'balance': ['other assets', 'other liabilities', "other equity"],
+			'income': ['other operating income', 'other IS items']
+		}
 		self.statement_splicer_index = {'balance': [],
 			'income': [], 'cfs': []}
 
@@ -240,6 +247,7 @@ class Filings():
 		but necessary for creating a time_series of the financials.
 		"""
 		row_labels = []
+		self.row_labels = {}
 		for rowname in self.get_row_labels(statement_type):
 			
 			# if nonempty, the statement_splicers (which represent additional
@@ -248,9 +256,9 @@ class Filings():
 			# spot of get_row_labels list, nd then saves this new list
 			# via set_row_labels_in_self
 			if statement_splicers != []:
-
+				print("statement_splicers[0] is: " + statement_splicers[0])
 				if statement_splicers[0] in rowname:
-					#print('rowname is:' + rowname)
+					print('rowname is:' + rowname)
 					row_labels.append(add_accounts[0])
 					row_labels.append(rowname)
 					self.statement_splicer_index[statement_type].append(row_labels.index(add_accounts.pop(0)))
@@ -262,19 +270,8 @@ class Filings():
 
 		if statement_splicers != []:
 			raise FinancialStandardError()
-		self.set_row_labels_in_self(statement_type, row_labels)
+		self.row_labels[statement_type] = row_labels
 	
-	def set_row_labels_in_self(self, statement_type, row_labels):
-		"""
-		Takes row_labels from prepare_row_labels and saves them in appropriate
-		instance variables.
-		"""
-		if statement_type == 'balance':
-			self.balance_row_labels = row_labels
-		elif statement_type == 'income':
-			self.income_row_labels = row_labels
-		elif statement_type == 'cfs':
-			self.cfs_row_labels = row_labels
 
 	def select_data_creation_function(self, data_table, statement_type):
 		"""
@@ -282,24 +279,27 @@ class Filings():
 		based on the statement_type.
 		"""
 		if statement_type == 'balance':
-			self.compile_balance_sheets(statement)
+			self.row_labels[statement_type] = self.prepare_row_labels('balance', 
+				['Total assets', 'Total liabilities', "Total stockholders’ equity"], 
+				['other assets', 'other liabilities', "other equity"])
+			self.compile_statement(statement)
 		elif statement_type == 'income':
-			self.income_rows = self.prepare_row_labels('income', ['operati', 'taxes'], 
+			self.row_labels[statement_type] = self.prepare_row_labels('income', ['operati', 'taxes'], 
 				['other operating income', 'other IS items'])
-			self.compile_income_statement(data_table, statement_type)
+			self.compile_statement(data_table, statement_type)
 		elif statement_type == 'cfs':
 			self.compile_cfs(data)
-		# idk what this is
 	
-	def compile_income_statement(self, data_table, statement_type):
+	def compile_statement(self, data_table, statement_type):
 		"""
-		creates a list of values that fits in with the predesignated self.income_rows
+		creates a list of values that fits in with the predesignated self.row_labels
 		"""
 		#operati is a partial string for operti[ng income] and [income from] operati[ons]
-		data_col = [[0,0]] * len(self.income_row_labels)
+		data_col = [[0,0]] * len(self.row_labels[statement_type])
 		counter = 0
 		for key in data_table:
-			data_col = self.insert_row(key, data_table, counter, self.income_row_labels, data_col, statement_type)
+			data_col = self.insert_row(key, data_table, counter, self.row_labels[statement_type], 
+				data_col, statement_type)
 			counter = counter + 1
 		return data_col
 
@@ -328,6 +328,8 @@ class Filings():
 			# For most companies the output is correct;
 			# If any strange scenarios arise please let me know
 			# at nick.oshinov@gmail.com with a link to filing
+			# This is especially dangerous when dealing with
+			# balance sheets, and potentially cashflow statements.
 			smallest_gap = [100, 100]
 			for x in self.statement_splicer_index[statement_type]:
 				if (counter - x) < smallest_gap[0]:
