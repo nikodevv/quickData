@@ -46,10 +46,6 @@ class TestFilings(TestCase):
 
 
 	def test_run_compile_income_statement(self):
-		# print(
-		# 	self.testFilings.compile_income_statement(self.testFilings.raw_data['2017Q1']
-		# 		['income'])
-		# 	)
 		self.testFilings.prepare_row_labels('income', ['operati', 'taxes'], 
 			['other operating income', 'other IS items'])
 		data_col = self.testFilings.compile_income_statement(self.testFilings.raw_data['2017Q1']['income'], 'income')
