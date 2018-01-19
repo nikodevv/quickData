@@ -296,7 +296,7 @@ class Filings():
 		creates a list of values that fits in with the predesignated self.income_rows
 		"""
 		#operati is a partial string for operti[ng income] and [income from] operati[ons]
-		data_col = [0] * len(self.income_row_labels)
+		data_col = [[0,0]] * len(self.income_row_labels)
 		counter = 0
 		for key in data_table:
 			data_col = self.insert_row(key, data_table, counter, self.income_row_labels, data_col, statement_type)
@@ -324,15 +324,16 @@ class Filings():
 			# because of the 'counter' variable mechanic only
 			# "guessing" where to insert the keys. This is based
 			# off matching the index of key (counter variable)
-			# to the index of statement_splicer in labels
+			# to the index of statement_splicer in labels.
+			# For most companies the output is correct;
+			# If any strange scenarios arise please let me know
+			# at nick.oshinov@gmail.com with a link to filing
 			smallest_gap = [100, 100]
 			for x in self.statement_splicer_index[statement_type]:
 				if (counter - x) < smallest_gap[0]:
 					smallest_gap = [(counter - x), x]
 			data_col[smallest_gap[1]] = data_col[key]
 			return data_col
-
-
 
 	def compile_balance_sheets(self):
 		self.balance = {}
