@@ -133,3 +133,4 @@ class TestDataCreation(TestCase):
 			+ "&accession_number=0001564590-17-022434&xbrl_type=v#")
 		self.assertEqual(f_q['year'], '2017')
 		self.assertEqual(f_q['period_ended'], 'Q3')
+		# Now i need a validation check to make sure 0's are in all empty cols.

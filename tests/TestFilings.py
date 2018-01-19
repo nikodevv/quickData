@@ -52,4 +52,7 @@ class TestFilings(TestCase):
 		# 	)
 		self.testFilings.prepare_row_labels('income', ['operati', 'taxes'], 
 			['other operating income', 'other IS items'])
+		data_col = self.testFilings.compile_income_statement(self.testFilings.raw_data['2017Q1']['income'], 'income')
+		print(data_col)
+		print("^ that was data_col, now we print labels")
 		print(self.testFilings.income_row_labels)
