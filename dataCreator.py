@@ -260,28 +260,16 @@ class Filings():
 					print('rowname is:' + rowname)
 					row_labels.append(self.add_accounts[statement_type][0])
 					row_labels.append(rowname)
-					self.statement_splicer_index[statement_type].append(
-						row_labels.index(self.give_label(statement_type)))
+					self.statement_splicer_index[statement_type].append(row_labels.index(self.add_accounts[statement_type].pop(0)))
+					self.statement_splicers[statement_type].pop(0)
 				else:
 					row_labels.append(rowname)
 			else:
 				row_labels.append(rowname)
 
-		self.assert_splicers_list_length(statement_type)
-		self.row_labels[statement_type] = row_labels
-	
-	def assert_splicers_list_length(self, statement_type):
-		if len(self.statement_splicers[statement_type]) != 1:
+		if self.statement_splicers[statement_type] != []:
 			raise FinancialStandardError()
-
-	def give_label(self, statement_type):
-		try: 
-			self.add_accounts[statement_type][1]
-			# if list is only 1 item long then the above line fails
-			self.statement_splicers[statement_type].pop(0)
-			return self.add_accounts[statement_type].pop(0)
-		except:
-			return self.add_accounts[statement_type][0]
+		self.row_labels[statement_type] = row_labels
 	
 	def select_data_creation_function(self, data_table, statement_type):
 		"""
