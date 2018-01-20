@@ -15,8 +15,14 @@ class DataScraper():
 		{'income': [amt of income Q2 of 2017, amt of income Q2 of 2016]}
 		"""
 		tree = DataScraper.create_tree(self, link_to_table)
-		line_items = tree.xpath('//td[@class="pl "]/a/text()|//td[@class="pl "]/a/strong/text()')
+		line_items = tree.xpath('//td[@class="pl "]/a/text()|//td[@class="pl "]/a/strong/text()|//td[@class="pl custom"]/a/text()')
 		values = tree.xpath('//td[@class="nump" or @class="num" or @class="text"]/text()')		
+		# if link_to_table == "https://www.sec.gov/Archives/edgar/data/1564408/000156459017022434/R6.htm":
+		# 	print(f'length of values array is {len(DataScraper.format_values(self, values))}')
+		# 	print(f'length of line_items is {len(line_items)}')
+		# if link_to_table == "https://www.sec.gov/Archives/edgar/data/1564408/000156459017022434/R2.htm":
+		# 	print(f'length of values array is {len(DataScraper.format_values(self, values))}')
+		# 	print(f'length of line_items is {len(line_items)}')
 		return DataScraper.mapData(self, cik, line_items, 
 			DataScraper.format_values(self, values), link_to_table)
 
@@ -51,7 +57,7 @@ class DataScraper():
 		period_ended = DataScraper.get_fiscal_year_and_quarter(self, 
 			cik, link_to_table, from_table_link=True)['period_ended']
 		if (period_ended == 'Q1' or period_ended == 'FY' or 
-			'Consolidated Balance Sheets' in page.text or 
+			'Consolidated Balance Sheets' in page.text or
 			'Consolidated Statements of Cash' in page.text):
 			for i in range(0, len(values), 2):
 				tempValues.append([values[i+1], values[i]])
@@ -174,7 +180,7 @@ class Filings():
 		self.statement_splicers = {
 			'balance': ['Total assets', 'Total liabilities', "Total stockholders’ equity"],
 			'income': ['operati', 'taxes'],
-			'cfs': ['operating activities', 'investing activities', 'financing activities', 'Cash and cash equivalents, end of period']
+			'cfs': ['operating activities', 'investing activities', 'financing activities', 'end of']
 		}
 		self.add_accounts = {
 			'balance': ['other assets', 'other liabilities', "other equity"],
@@ -217,12 +223,8 @@ class Filings():
 		"""
 
 		self.raw_data = {}
-		starttime = time.time()
 		all_filings_links = [DataScraper.get_tables_for_one_filing(self, 
 			self.cik, x) for x in DataScraper.find_filings(self, self.cik)]
-
-		starttime = time.time()
-
 		for filing_link in all_filings_links:
 			temp_dict = {} 
 			for x in filing_link:
@@ -255,9 +257,7 @@ class Filings():
 			# spot of get_row_labels list, nd then saves this new list
 			# via set_row_labels_in_self
 			if self.statement_splicers[statement_type] != []:
-				print("statement_splicers[0] is: " + self.statement_splicers[statement_type][0])
 				if self.statement_splicers[statement_type][0] in rowname:
-					print('rowname is:' + rowname)
 					row_labels.append(self.add_accounts[statement_type][0])
 					row_labels.append(rowname)
 					self.statement_splicer_index[statement_type].append(row_labels.index(self.add_accounts[statement_type].pop(0)))
