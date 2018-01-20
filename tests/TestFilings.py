@@ -38,7 +38,6 @@ class TestFilings(TestCase):
 	# 		self.testFilings.get_row_labels(self.testFilings.raw_data,
 	# 			'balance')[0],
 	# 		str)
-
 	# 	@skip
 	# def test_picks_correct_compilation_function(self):
 	# 	self.fail("incomplete test")
@@ -46,10 +45,8 @@ class TestFilings(TestCase):
 
 
 	def test_run_compile_income_statement(self):
-		self.testFilings.prepare_row_labels('balance', 
-			['Total assets', 'Total liabilities', "Total stockholders’ equity"], 
-			['other assets', 'other liabilities', "other equity"])
-		data_col = self.testFilings.compile_statement(self.testFilings.raw_data['2017Q2']['balance'], 'balance')
+		self.testFilings.prepare_row_labels('cfs')
+		data_col = self.testFilings.compile_statement(self.testFilings.raw_data['2017Q3']['cfs'], 'cfs')
 		print(data_col)
 		print("^ that was data_col, now we print labels")
-		print(self.testFilings.income_row_labels)
+		print(self.testFilings.row_labels['cfs'])
