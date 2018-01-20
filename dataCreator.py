@@ -17,12 +17,6 @@ class DataScraper():
 		tree = DataScraper.create_tree(self, link_to_table)
 		line_items = tree.xpath('//td[@class="pl "]/a/text()|//td[@class="pl "]/a/strong/text()|//td[@class="pl custom"]/a/text()')
 		values = tree.xpath('//td[@class="nump" or @class="num" or @class="text"]/text()')		
-		# if link_to_table == "https://www.sec.gov/Archives/edgar/data/1564408/000156459017022434/R6.htm":
-		# 	print(f'length of values array is {len(DataScraper.format_values(self, values))}')
-		# 	print(f'length of line_items is {len(line_items)}')
-		# if link_to_table == "https://www.sec.gov/Archives/edgar/data/1564408/000156459017022434/R2.htm":
-		# 	print(f'length of values array is {len(DataScraper.format_values(self, values))}')
-		# 	print(f'length of line_items is {len(line_items)}')
 		return DataScraper.mapData(self, cik, line_items, 
 			DataScraper.format_values(self, values), link_to_table)
 
@@ -241,6 +235,16 @@ class Filings():
 		"""
 		return [key for key in self.raw_data[self.latest_period][statement_type]]
 
+	def set_latest_period(self, data):
+		"""
+		Sets the company's latest filing date to self.latest_period
+		"""
+		self.latest_period = ''
+		for period in data:
+			if (self.latest_period == ''):
+				self.latest_period = period
+				break
+
 	def prepare_row_labels(self, statement_type):
 		"""
 		Calls get_row_labels to get a list of financial accounts which will be used
@@ -331,23 +335,6 @@ class Filings():
 					smallest_gap = [(counter - x), x]
 			data_col[smallest_gap[1]] = [[x[0]+x[2], x[1] + x[3]] for x in data_col[key] + data_col[smallest_gap[1]]]
 			return data_col
-
-	def compile_balance_sheets(self):
-		self.balance = {}
-
-	def compile_cfs(self):
-		self.cfs = {}
-
-	def set_latest_period(self, data):
-		"""
-		Sets the company's latest filing date to self.latest_period
-		"""
-		self.latest_period = ''
-		for period in data:
-			if (self.latest_period == ''):
-				self.latest_period = period
-				break
-
 
 	def clean_data(self):
 		"""
