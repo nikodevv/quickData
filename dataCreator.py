@@ -174,7 +174,7 @@ class Filings():
 		self.statement_splicers = {
 			'balance': ['Total assets', 'Total liabilities', "Total stockholders’ equity"],
 			'income': ['operati', 'taxes'],
-			'cfs': ['Net cash', 'Net cash', 'Net cash', 'Cash and cash equivalents, end of period']
+			'cfs': ['operating activities', 'investing activities', 'financing activities', 'Cash and cash equivalents, end of period']
 		}
 		self.add_accounts = {
 			'balance': ['other assets', 'other liabilities', "other equity"],
@@ -270,7 +270,7 @@ class Filings():
 		if self.statement_splicers[statement_type] != []:
 			raise FinancialStandardError()
 		self.row_labels[statement_type] = row_labels
-	
+
 	def select_data_creation_function(self, data_table, statement_type):
 		"""
 		Passes a data_table (dictionary) to the correct "compilation" function
@@ -329,7 +329,7 @@ class Filings():
 			for x in self.statement_splicer_index[statement_type]:
 				if (counter - x) < smallest_gap[0]:
 					smallest_gap = [(counter - x), x]
-			data_col[smallest_gap[1]] = data_col[key]
+			data_col[smallest_gap[1]] = [[x[0]+x[2], x[1] + x[3]] for x in data_col[key] + data_col[smallest_gap[1]]]
 			return data_col
 
 	def compile_balance_sheets(self):
