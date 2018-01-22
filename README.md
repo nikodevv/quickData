@@ -22,16 +22,24 @@ Simply create an instance of `Filings` with a given company's CIK, and a Python 
 ```
 snapFilings = Filings(1564408)
 ```
-### Reading Filings as time series data
+### Example (generating time series data of a financial statement)
+To access the data in any SEC-filing table ([example: Snap Inc's 2017 Income Statement](https://www.sec.gov/Archives/edgar/data/1564408/000156459017022434/R4.htm)), just call 
+```
+custom_table = [] 
+custom_table.append(snapFiligns.row_labels['income']) # custom_table[0] is now the row labels of generated income statement
+custom_table.append(snapFilings.full_dict['2017Q3'][income]) #custom_table[1] is now the column corresponding to Q3 2017 income statement data
+```
+
+### Explanation of example
 The company's time-series filings are stored in two objects.
-The first is a dictionary of lists containing the row labels (`snapFilings.row_labels`) of all 3 financial statements. These labels are similiar to those found in the original SEC filings. Each financial statement can be accessed by one of three keys: `income` returns income statement line items, `balance` returns balance sheet line items, and `cfs` returns cashflow statement line items (line items refers to accounts). For example, the row labels of a Snapchat's quickData income statement can be accessed as follows:
+The first is a dictionary of lists containing the row labels (`snapFilings.row_labels`) of all 3 financial statements. These labels are similiar to those found in the original SEC filings. Each financial statement can be accessed by one of three keys: `income` returns income statement line items, `balance` returns balance sheet line items, and `cfs` returns cashflow statement line items (line items refers to accounts). For example, the row labels of Snapchat's quickData income statement can be accessed as follows:
 ```
 snapFilings.row_labels['income']
 > ['Income Statement [Abstract]', 'Revenue', 'Costs and expenses', 'Cost of revenue', 'Research and development', 'Sales and marketing', 'General and administrative', ...]
 ```
-The `row_labels` are in 1:1 correspondace with the data columns corresponding to each time period. These data columns are called by `snapFilings.full_dict`. Together, `row_labels` and `full_dict` create time-series financial statements.
+The `row_labels` are in 1:1 correspondace with the data columns corresponding to each time period. These data columns are called by `snapFilings.full_dict`. Together, `row_labels` and `full_dict` can create time-series financial statements.
 
-Here is an example of what Snap Inc.'s quickData full_dict looks like:
+Here is an example of what Snap Inc.'s `full_dict` looks like:
 ```
 # snapFilings.full_dict = 
 	{'2017Q1': {
@@ -48,8 +56,10 @@ Here is an example of what Snap Inc.'s quickData full_dict looks like:
 	}
 ```
 
-Where `2017Q1` refers to the first financial quarter of Snap Inc's 2017 financial year.
+Where `2017Q1` refers to the first financial quarter of Snap Inc's 2017 financial year. Annual filings keys are of the following form: '2017FY'.
 
+
+### Full 
 
 ## Disclaimer
 The author assumes no responsibility or liability for any errors, inaccuracies, or omissions in the data generated or output by quickData, nor any responsibility or liability for investment or business descicions made on said data. The information provided by quickData is provided on an “as is” basis with no guarantees of completeness, accuracy, usefulness or timeliness.
