@@ -1,4 +1,5 @@
 pyedgar/
 *.pyc
 misc/
+spreadsheets/*
 example_dict
