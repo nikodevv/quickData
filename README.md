@@ -28,16 +28,14 @@ To access the data in any SEC-filing table ([example: Snap Inc's 2017 Income Sta
 custom_table = [] 
 # custom_table[0] will be the row labels of income statement
 custom_table.append(snapFiligns.row_labels['income'])
-#custom_table[1] will be the values
+# custom_table[1] will be the values
 custom_table.append(snapFilings.full_dict['2017Q3'][income])
 
-############################################################
-
 print(custom_table[0][1] + ':' + custom_table[1][1])
-> Revenue: 207937
+# Revenue: 207937
 
 print(custom_table[0][9] + ':' + custom_table[1][9])
-> Loss from operations: -461827
+# Loss from operations: -461827
 ```
 
 ### Explanation of example
