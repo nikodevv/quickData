@@ -29,9 +29,27 @@ The first is a dictionary of lists containing the row labels (`snapFilings.row_l
 snapFilings.row_labels['income']
 > ['Income Statement [Abstract]', 'Revenue', 'Costs and expenses', 'Cost of revenue', 'Research and development', 'Sales and marketing', 'General and administrative', ...]
 ```
-The `row_labels` are in 1:1 correspondace with the data columns corresponding to each time period `snapFilings.full_dict`. Together, `row_labels` and `full_dict` create time-series financial statements.
+The `row_labels` are in 1:1 correspondace with the data columns corresponding to each time period. These data columns are called by `snapFilings.full_dict`. Together, `row_labels` and `full_dict` create time-series financial statements.
 
-This includes. `snapFilings.full_dict` contains the numerical 
+Here is an example of what Snap Inc.'s quickData full_dict looks like:
+```
+# snapFilings.full_dict = 
+	{'2017Q1': {
+		'balance': [...]
+		'income' : [...]
+		'cfs': [...]
+		}
+	'2017Q2': {
+		'balance': [...]
+		'income' : [...]
+		'cfs': [...]
+		}
+	'2017Q1' : ...
+	}
+```
+
+Where `2017Q1` refers to the first financial quarter of Snap Inc's 2017 financial year.
+
 
 ## Disclaimer
 The author assumes no responsibility or liability for any errors, inaccuracies, or omissions in the data generated or output by quickData, nor any responsibility or liability for investment or business descicions made on said data. The information provided by quickData is provided on an “as is” basis with no guarantees of completeness, accuracy, usefulness or timeliness.
