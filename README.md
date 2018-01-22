@@ -18,17 +18,17 @@ Note earlier versions of python can be used if all f-strings are refactored to n
 ```
 
 ## API
-Simply create an instance of `Filings` with the company's CIK, and a Python object containing all of the company's financial statements will be generated. For example Snapchat's CIK is 1564408 (Snap Inc.), so a Filings object would be created as follows:
+Simply create an instance of `Filings` with a given company's CIK, and a Python object containing all of the company's financial statements will be generated. For example Snapchat's CIK is 1564408 (Snap Inc.), so a Filings object would be created as follows:
 ```
 snapFilings = Filings(1564408)
 ```
 ### Reading Filings as time series data
 The company's time-series filings are stored in two objects.
 The first is a dictionary of lists containing the row labels (`snapFilings.row_labels`) of all 3 financial statements. These labels are similiar to those found in the original filings. Each financial statement can be accessed by one of three keys: `income` returns income statement line items, `balance` returns balance sheet line items, and `cfs` returns cashflow statement line items (line items refers to accounts). For example, the row labels of a Snapchat's quickData income statement are formatted as follows
-'''
+```
 snapFilings.row_labels['income']
 > ['Income Statement [Abstract]', 'Revenue', 'Costs and expenses', 'Cost of revenue', 'Research and development', 'Sales and marketing', 'General and administrative', ...]
-'''
+```
 These row_labels are in 1:1 correspondace with the data columns corresponding to each time period `snapFilings.full_dict`. This means that a multi-time-period financial statement can be easily generated via.
 
 This includes. `snapFilings.full_dict` contains the numerical 
