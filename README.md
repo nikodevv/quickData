@@ -38,6 +38,7 @@ print(custom_table[0][9] + ':' + custom_table[1][9])
 # Loss from operations: -461827
 ```
 
+Note: row_labels will not be an exact copy of the orignial statement's table rows because quickData creates and removes certain rows for the purposes of consolidating multiple time periods which may utilize inconsistent reporting methodologies.
 ### Explanation of example
 The company's time-series filings are stored in two objects.
 The first is a dictionary of lists containing the row labels (`snapFilings.row_labels`) of all 3 financial statements. These labels are similiar to those found in the original SEC filings. Each financial statement can be accessed by one of three keys: `income` returns income statement line items, `balance` returns balance sheet line items, and `cfs` returns cashflow statement line items (line items refers to accounts). For example, the row labels of Snapchat's quickData income statement can be accessed as follows:
