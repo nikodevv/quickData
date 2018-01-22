@@ -15,10 +15,25 @@ class DataScraper():
 		{'income': [amt of income Q2 of 2017, amt of income Q2 of 2016]}
 		"""
 		tree = DataScraper.create_tree(self, link_to_table)
-		line_items = tree.xpath('//td[@class="pl "]/a/text()|//td[@class="pl "]/a/strong/text()|//td[@class="pl custom"]/a/text()')
-		values = tree.xpath('//td[@class="nump" or @class="num" or @class="text"]/text()')		
+		line_items = DataScraper.make_line_items_unique(self,
+			tree.xpath('//td[@class="pl "]/a/text()|//td[@class="pl "]/a/strong/text()|//td[@class="pl custom"]/a/text()'))
+		values = tree.xpath('//td[@class="nump" or @class="num" or @class="text"]/text()')
+		# if (link_to_table == 'https://www.sec.gov/Archives/edgar/data/1564408/000156459017017303/R2.htm' or
+		# 	link_to_table == 'https://www.sec.gov/Archives/edgar/data/1564408/000156459017017303/R6.htm'):
+		# 	print(len(line_items)*2 - len(DataScraper.format_values(self, values)))
 		return DataScraper.mapData(self, cik, line_items, 
 			DataScraper.format_values(self, values), link_to_table)
+
+	def make_line_items_unique(self, line_items):
+		unique_line_items = []
+		counter = 0
+		for item in line_items:
+			if item not in unique_line_items:
+				unique_line_items.append(item)
+			else:
+				unique_line_items.append(item + str(counter))
+				counter = counter + 1
+		return unique_line_items
 
 	def create_tree(self, link):
 		"""returns tree that can be searched via xpath"""
@@ -184,6 +199,7 @@ class Filings():
 		self.statement_splicer_index = {'balance': [],
 			'income': [], 'cfs': []}
 		self.row_labels = {}
+
 	# Execution time 6-7 sec on my machine for Snapchat.
 	def collect_raw_data(self):
 		"""
@@ -273,21 +289,12 @@ class Filings():
 
 		if self.statement_splicers[statement_type] != []:
 			raise FinancialStandardError()
+		
 		self.row_labels[statement_type] = row_labels
 
-	def select_data_creation_function(self, data_table, statement_type):
-		"""
-		Passes a data_table (dictionary) to the correct "compilation" function
-		based on the statement_type.
-		"""
-		if statement_type == 'balance':
-			self.row_labels[statement_type] = self.prepare_row_labels('balance')
-			self.compile_statement(statement)
-		elif statement_type == 'income':
-			self.row_labels[statement_type] = self.prepare_row_labels('income')
-			self.compile_statement(data_table, statement_type)
-		elif statement_type == 'cfs':
-			self.row_labels[statement_type] = self.prepare_row_labels('cfs')
+	def save_row_labels(self):
+		for statement_type in self.raw_data[self.latest_period]:
+			self.prepare_row_labels(statement_type)
 	
 	def compile_statement(self, data_table, statement_type):
 		"""
@@ -308,14 +315,28 @@ class Filings():
 		them into the correct spot of a list corresponding
 		the correct format of the final time series
 		"""
-		# Code Smell-- best_match should be its own function
+		# Code Smell
 		best_match = [0,'']
+		label_counter = 0
+		threshold = 0
 		for label in labels:
+			# the label_counter is to make sure that non-unique names
+			# like 'Net loss', which can show up at the start and end of
+			# financial statements (see snapchat cfs 2017Q3),
+			# end up within some fixed threshold of to the
+			# index they appear in the original filing used
+			# to generate the row labels.
+			# if (label_counter - counter <= 3) and (counter - label_counter <= 3): ### NOT DOING WHAT IT SHOULD BE
 			if (fuzz.ratio(key, label)) >= max(0.70, best_match[0]):
+				if "Net loss" in key and statement_type =='cfs':
+					print(f"Net Loss = {data_table[key]}")
 				best_match = [fuzz.ratio(key, label), label]
-		
+			label_counter = label_counter + 1
+
 		if best_match[0] >= 0.70:
-			data_col[labels.index(best_match[1])] = data_table[key]
+			# if key == "Net loss" and statement_type =='cfs':
+			# 	print(f"Net Loss = {data_table[key]}") ############################ FOR SOME REASON THE FIRST NET LOSS VALUE IS NOT MATCHING
+			data_col[labels.index(best_match[1])] = data_table[key]# + data_col[labels.index(best_match[1])]
 			return data_col
 		else:
 			# Right now this code WILL result in bugs for certain
@@ -334,7 +355,18 @@ class Filings():
 				if (counter - x) < smallest_gap[0]:
 					smallest_gap = [(counter - x), x]
 			data_col[smallest_gap[1]] = [[x[0]+x[2], x[1] + x[3]] for x in data_col[key] + data_col[smallest_gap[1]]]
+			
 			return data_col
+
+	def save_data_cols(self):
+		self.save_row_labels()
+		# Should refactor; could get an extra one year of financial data if I 
+		# take advantage of self.compilestatment(...)[...][1], (i.e. entry[0])
+		# which already exists but is not being saved.
+		self.full_dict = {period: {statement_type: [entry[1] for entry 
+			in self.compile_statement(self.raw_data[period][statement_type],statement_type)]
+			for statement_type in self.raw_data[period]} 
+			for period in self.raw_data}
 
 	def clean_data(self):
 		"""
@@ -342,8 +374,6 @@ class Filings():
 		as an unintentional byproduct
 		"""
 		pass
-
-
 
 class FinancialStandardError(Exception):
     def __init__(self):

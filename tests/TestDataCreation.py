@@ -10,6 +10,11 @@ class TestDataCreation(TestCase):
 	def setUp(self):
 		self.testScraper = DataScraper()
 
+	def test_line_items_are_unique(self):
+		line_items = self.testScraper.make_line_items_unique(['one', 'one', 'three', 'samsung', 'three'])
+		for item in line_items:
+			self.assertEqual(line_items.count(item), 1)
+
 	@skip
 	def test_maps_data_correctly(self):
 		data_dict = self.testScraper.get_data_from_table_link('1564408',

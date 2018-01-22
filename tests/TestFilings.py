@@ -45,5 +45,7 @@ class TestFilings(TestCase):
 
 
 	def test_run_compile_income_statement(self):
-		self.testFilings.prepare_row_labels('cfs')
-		data_col = self.testFilings.compile_statement(self.testFilings.raw_data['2017Q1']['cfs'], 'cfs')
+		self.testFilings.save_data_cols()
+		print(self.testFilings.full_dict)
+		print(self.testFilings.row_labels)
+		
