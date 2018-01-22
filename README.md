@@ -24,14 +24,14 @@ snapFilings = Filings(1564408)
 ```
 ### Reading Filings as time series data
 The company's time-series filings are stored in two objects.
-The first is a dictionary of lists containing the row labels (`snapFilings.row_labels`) of all 3 financial statements. These labels are similiar to those found in the original filings. Each financial statement can be accessed by one of three keys: `income` returns income statement line items, `balance` returns balance sheet line items, and `cfs` returns cashflow statement line items (line items refers to accounts). For example, the row labels of a Snapchat's quickData income statement are formatted as follows
+The first is a dictionary of lists containing the row labels (`snapFilings.row_labels`) of all 3 financial statements. These labels are similiar to those found in the original SEC filings. Each financial statement can be accessed by one of three keys: `income` returns income statement line items, `balance` returns balance sheet line items, and `cfs` returns cashflow statement line items (line items refers to accounts). For example, the row labels of a Snapchat's quickData income statement can be accessed as follows:
 ```
 snapFilings.row_labels['income']
 > ['Income Statement [Abstract]', 'Revenue', 'Costs and expenses', 'Cost of revenue', 'Research and development', 'Sales and marketing', 'General and administrative', ...]
 ```
-These row_labels are in 1:1 correspondace with the data columns corresponding to each time period `snapFilings.full_dict`. This means that a multi-time-period financial statement can be easily generated via.
+The `row_labels` are in 1:1 correspondace with the data columns corresponding to each time period `snapFilings.full_dict`. Together, `row_labels` and `full_dict` create time-series financial statements.
 
 This includes. `snapFilings.full_dict` contains the numerical 
 
-##Disclaimer
+## Disclaimer
 The author assumes no responsibility or liability for any errors, inaccuracies, or omissions in the data generated or output by quickData, nor any responsibility or liability for investment or business descicions made on said data. The information provided by quickData is provided on an “as is” basis with no guarantees of completeness, accuracy, usefulness or timeliness.
