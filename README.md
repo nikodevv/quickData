@@ -8,7 +8,7 @@ requests
 fuzzy_wuzzy
 ```
 Note earlier versions of python can be used if all f-strings are refactored to normal string concatenations. i.e. change `some_function(f'example {string}')` to `some_function('example ' + string)`
-### Install Requirements
+### Installation
 1. Download source files either manually or via `git clone https://github.com/nikodevv/quickData`
 2. Install requirements using pip
 ```
