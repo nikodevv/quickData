@@ -40,8 +40,9 @@ class DataScraper():
 		return fromstring(requests.get(link).content)
 
 	def format_values(self, values):
-		# helper function; makes sure the values elements of raw data are all 
-		# valid types
+		'''
+		makes sure the values elements of raw data are all valid types
+		'''
 		def correctSign(x):
 			if str(x)[0] == "(":
 				return '-'+x.strip('(').strip(')')
@@ -56,7 +57,7 @@ class DataScraper():
 		return temp_values
 
 	def mapData(self, cik, line_items, values, link_to_table):
-		# helper function; combines names & values into a single
+		# combines names & values into a single
 		# dictionary. Since SEC filings for Q1 and FY look different than 
 		# all other filings (tables have 2 columns fewer), scraping rules
 		# vary
@@ -328,14 +329,10 @@ class Filings():
 			# to generate the row labels.
 			# if (label_counter - counter <= 3) and (counter - label_counter <= 3): ### NOT DOING WHAT IT SHOULD BE
 			if (fuzz.ratio(key, label)) >= max(0.70, best_match[0]):
-				if "Net loss" in key and statement_type =='cfs':
-					print(f"Net Loss = {data_table[key]}")
 				best_match = [fuzz.ratio(key, label), label]
 			label_counter = label_counter + 1
 
 		if best_match[0] >= 0.70:
-			# if key == "Net loss" and statement_type =='cfs':
-			# 	print(f"Net Loss = {data_table[key]}") ############################ FOR SOME REASON THE FIRST NET LOSS VALUE IS NOT MATCHING
 			data_col[labels.index(best_match[1])] = data_table[key]# + data_col[labels.index(best_match[1])]
 			return data_col
 		else:

@@ -15,44 +15,33 @@ class TestDataCreation(TestCase):
 		for item in line_items:
 			self.assertEqual(line_items.count(item), 1)
 
-	@skip
-	def test_maps_data_correctly(self):
+	def test_tree_data_is_valid(self):
+		"""
+		Integration test; checks whether
+		the data is scrapped and formatted
+		correctly
+		"""
 		data_dict = self.testScraper.get_data_from_table_link('1564408',
 			'https://www.sec.gov/Archives/edgar/data'
 			+ '/1564408/000156459017022434/R4.htm')
-		#. currently invalid test; needs some additional data added
-		
-		
-		correct_mapped_data = {
-		'Revenue': [128204,207937],
-		'Cost of revenue': [127780, 210710],
-		'Research and development': [54562, 239442],
-		'Sales and marketing': [34658, 101511],
-		'General and administrative': [42172, 118101],
-		'Total costs and expenses': [259172, 669764],
-		'Loss from operations': [-130968, -461827],
-		'Interest income': [1938, 6253],
-		'Interest expense': [-648,-887],
-		'Other income (expense), net': [-1421, 1002],
-		'Loss before income taxes': [-131099, -455459],
-		'Income tax benefit (expense)': [6871, 12300],
-		'Net loss': [-124228, -443159],
-		'Basic': [float(-0.15),float(-0.36)],
-		'Diluted': [float(-0.15), float(-0.36)]
-		}
-		self.assertDictEqual(data_dict, correct_mapped_data)
+		self.assertIsInstance(data_dict, dict)
+		for key in data_dict:
+			self.assertIsInstance(data_dict[key], list)
+			self.assertIsInstance(data_dict[key][0], float)
+			self.assertIsInstance(data_dict[key][1], float)
+			self.assertIsInstance(key, str)
 
 	def test_values_correctly_formated(self):
-		# tests the format_values function indirectly
-		data_dict = self.testScraper.get_data_from_table_link( '1564408',
-			'https://www.sec.gov/Archives/edgar/data'
-			+ '/1564408/000156459017022434/R4.htm')
-		for x in data_dict:
-			self.assertIsInstance(data_dict[x][0],float)
-			self.assertIsInstance(data_dict[x][1],float)
+		"""
+		unit test; checks that number strings are cast to floats
+		""" 
+		values = ['$4000','(300,00)', '$(1,0)']
+		for value in self.testScraper.format_values(values):
+			self.assertIsInstance(value, float)
 
 	def test_can_find_company_documents_from_cik(self):
-		cik = '1564408'
+		"""unit test"""
+		cik = '1564408' # snapchat cik
 		links_to_filings = self.testScraper.find_filings(cik)
 		self.assertEqual(links_to_filings[0], "https://www.sec.gov/cgi-bin/" +
 			"viewer?action=view&cik=1564408&accession_number=" + 
@@ -64,22 +53,28 @@ class TestDataCreation(TestCase):
 			"viewer?action=view&cik=1564408&accession_number=" + 
 			"0001564590-17-010357&xbrl_type=v")
 
-	@skip
-	def test_can_categorize_filings(self):
-		# currently invalid test
-		link_to_10Q = ("https://www.sec.gov/cgi-bin/viewer?action=view&" + 
-			"cik=1564408&accession_number=0001564590-17-022434&xbrl_type=v")
-		# wtf
-		# techinically this is a link to a 10-K/A, but the two should work 
-		# the same.
-		link_to_10K = ("https://www.sec.gov/cgi-bin/viewer?action=view&cik" + 
-			"=814586&accession_number=0001683168-17-000858&xbrl_type=v")
-		self.assertEqual(self.testScraper.categorize_filing(link_to_10Q),'10-Q')
-		self.assertEqual(self.testScraper.categorize_filing(link_to_10K),'10-K')
+	def test_can_find_accession_number_from_filing_link(self):
+		"""unit test"""
+		self.assertEqual(
+			self.testScraper.extract_accession_number_from_filings_link(
+				"https://www.sec.gov/cgi-bin/" + 
+				"viewer?action=view&cik=1564408&accession_number=" + 
+				"0001564590-17-010357&xbrl_type=v"),
+			'000156459017010357')
+
+	def test_can_find_accession_number_from_table_link(self):
+		"""unit test"""
+		self.assertEqual(
+			self.testScraper.extract_accession_number_from_table_link(
+				'https://www.sec.gov/Archives/edgar/data/1564408/000156459017010357/R2.htm'),
+			'000156459017010357')
+
 
 	def test_returns_the_right_filings(self):
-		# checks wheteher scrapper returns all 10-K or 10-Q filings
-		# exclusively..
+		"""
+		unit test; checks wheteher scrapper returns all 10-K or 10-Q filings
+		exclusively
+		"""
 		
 		list_of_10ks = ["https://www.sec.gov/cgi-bin/viewer?action=view" +
 		 "&cik=814586&accession_number=0001683168-17-000864&xbrl_type=v",
@@ -100,27 +95,8 @@ class TestDataCreation(TestCase):
 		self.assertEqual(list_of_10ks, 
 			self.testScraper.find_filings('0000814586', filing_type='10-K',))
 
-	def test_returns_correct_accession_number_from_filings_link(self):
-		self.assertEqual(
-			self.testScraper.extract_accession_number_from_filings_link(
-			"https://www.sec.gov/cgi-bin/viewer?action=view&cik=1564408&"
-			+ "accession_number=0001564590-17-022434&xbrl_type=v", 
-			unformatted=True), '0001564590-17-022434')
-		self.assertEqual(
-			self.testScraper.extract_accession_number_from_filings_link(
-			"https://www.sec.gov/cgi-bin/viewer?action=view&cik=1564408&"
-			+"accession_number=0001564590-17-022434&xbrl_type=v"),
-			'000156459017022434')
-
-	def test_returns_correct_accession_number_from_table_link(self):
-		self.assertEqual(
-			self.testScraper.extract_accession_number_from_table_link(
-				"https://www.sec.gov/Archives/edgar/data/1564408/" +
-				"000156459017022434/R4.htm"),
-			'000156459017022434')
-
-	@skip
-	def test_gets_tables_for_one_filing(self):
+	def test_gets_table_links_for_one_filing(self):
+		"""unit test"""
 		link_to_filing = ("https://www.sec.gov/cgi-bin/viewer?action=view&" + 
 			"cik=1564408&accession_number=0001564590-17-022434&xbrl_type=v")
 		list_of_filings = self.testScraper.get_tables_for_one_filing(
@@ -138,4 +114,3 @@ class TestDataCreation(TestCase):
 			+ "&accession_number=0001564590-17-022434&xbrl_type=v#")
 		self.assertEqual(f_q['year'], '2017')
 		self.assertEqual(f_q['period_ended'], 'Q3')
-		# Now i need a validation check to make sure 0's are in all empty cols.

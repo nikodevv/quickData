@@ -7,45 +7,13 @@ from dataCreator import DataScraper, Filings
 
 class TestFilings(TestCase):
 	"""
-	Due to the messiness of data involved these tests
-	are purely for debuging purposes. They take long to
-	execute, and most are incomplete as preparing
-	a static dataset for testing purposes is a LABOROUS
-	enadvour that I will not attempt.
+	Due to the messiness of data involved the
+	"semantics" of the data generated is not tested.
 	"""
 	def setUp(self):
 		self.testFilings = Filings('1564408') # Snapchat cik
 
-	# @skip
-	# def test_returns_dict(self):
-
-	# 	self.assertIsInstance(self.testFilings.raw_data, dict)
-	# 	print(self.testFilings.raw_data['2017Q1']['income'])
-
-	# def test_set_latest_period(self):
-	# 	self.testFilings.set_latest_period({'period1' :{'some':'object', 
-	# 		'period2' : {'another': 'object'}}})
-	# 	self.assertEqual(self.testFilings.latest_period, 'period1')
-	# 	# print(self.testFilings.raw_data['2017Q3']['income'])
-	# @skip
-	# def test_returns_row_labels(self):
-	# 	self.testFilings.set_latest_period(self.testFilings.raw_data)
-	# 	self.assertIsInstance(
-	# 		self.testFilings.get_row_labels(self.testFilings.raw_data,
-	# 			'income'),
-	# 		list)
-	# 	self.assertIsInstance(
-	# 		self.testFilings.get_row_labels(self.testFilings.raw_data,
-	# 			'balance')[0],
-	# 		str)
-	# 	@skip
-	# def test_picks_correct_compilation_function(self):
-	# 	self.fail("incomplete test")
-	# 	# tests select_data_creation_function()
-
 
 	def test_run_compile_income_statement(self):
 		self.testFilings.save_data_cols()
-		print(self.testFilings.full_dict)
-		print(self.testFilings.row_labels)
-		
+		self.assertIsInstance(self.testFilings.full_dict, dict)
