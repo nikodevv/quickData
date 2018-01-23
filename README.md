@@ -7,8 +7,9 @@ lxml
 requests
 fuzzy_wuzzy
 ```
-Note earlier versions of python can be used if all f-strings are refactored to normal string concatenations. i.e. change `some_function(f'example {string}')` to `some_function('example ' + string)`
-### Installation
+Note earlier versions of python can be used if all f-strings in dataCreator.py are refactored to normal string concatenations. i.e. change `some_function(f'example {string}')` to `some_function('example ' + string)`
+### Installation Steps
+To install simply run `pip install -r requirements.txt`, or alternatively:
 1. Download source files either manually or via `git clone https://github.com/nikodevv/quickData`
 2. Install requirements using pip
 ```
@@ -66,9 +67,6 @@ Here is an example of what Snap Inc.'s `full_dict` looks like:
 ```
 
 Where `2017Q1` refers to the first financial quarter of Snap Inc's 2017 financial year. Annual filings keys are of the following form: '2017FY'.
-
-
-### Full 
 
 ## Disclaimer
 The author assumes no responsibility or liability for any errors, inaccuracies, or omissions in the data generated or output by quickData, nor any responsibility or liability for investment or business descicions made on said data. The information provided by quickData is provided on an “as is” basis with no guarantees of completeness, accuracy, usefulness or timeliness.
