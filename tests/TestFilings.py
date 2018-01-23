@@ -15,5 +15,19 @@ class TestFilings(TestCase):
 
 
 	def test_run_compile_income_statement(self):
+		"""
+		regression test--checks to see whether the program
+		returns the right kind of data
+		"""
 		self.testFilings.save_data_cols()
 		self.assertIsInstance(self.testFilings.full_dict, dict)
+		for timeperiod in self.testFilings.full_dict:
+			self.assertIsInstance(timeperiod, str)
+			self.assertIsInstance(
+				self.testFilings.full_dict[timeperiod], dict)
+			for statement in self.testFilings.full_dict[timeperiod]:
+				self.assertIsInstance(statement, str)
+				self.assertIsInstance(
+					self.testFilings.full_dict[timeperiod][statement], list)
+				for data in self.testFilings.full_dict[timeperiod][statement]:
+					self.assertIsInstance(float(data), float)
