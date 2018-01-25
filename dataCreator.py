@@ -365,6 +365,28 @@ class Filings():
 			for statement_type in self.raw_data[period]} 
 			for period in self.raw_data}
 
+	def add_Q4_cols(self):
+		temp_dict = {}
+		for period in self.full_dict:
+			if 'FY' in period and self.filing_exists(f'{period[:3]}Q1')==True:
+				temp_dict[f'{period[:3]}Q4'] = self.generate_Q4_cols(self.full_dict[period], 
+					self.full_dict[f'{period[:3]}Q1'])
+			temp_dict[period] = full_dict[period]
+		self.full_dict = temp_dict
+
+	def generate_Q4_cols(self, fy_statements, q1_statements):
+		for statement_type in fy_statements:
+			for index in range(0, len(fy_statements)-1:
+
+	def filing_exists(self, filing_period):
+		"""
+		returns true if full_dict has the specified filing
+		"""
+		try: 
+			self.full_dict[filing_period]
+			return True
+		except:
+			return False
 	def clean_data(self):
 		"""
 		Removes common unecessary line items that were scrapped

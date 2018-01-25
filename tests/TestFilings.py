@@ -31,3 +31,7 @@ class TestFilings(TestCase):
 					self.testFilings.full_dict[timeperiod][statement], list)
 				for data in self.testFilings.full_dict[timeperiod][statement]:
 					self.assertIsInstance(float(data), float)
+
+	def test_Q4_generation(self):
+		"""unit test"""
+		pass
