@@ -34,4 +34,29 @@ class TestFilings(TestCase):
 
 	def test_Q4_generation(self):
 		"""unit test"""
-		pass
+		fy = {
+			'income': [4,3,2,1],
+			'balance': [1,2,3,4],
+			'cfs': [-1,2,4],
+		}
+		q1 = {
+			'income': [1,1,1,1],
+			'balance': [1,2,3,4],
+			'cfs': [1,1,1],
+		}
+		q2 = {
+			'income': [1,1,1,1],
+			'balance': [1,2,3,4],
+			'cfs': [2,2,2],
+		}
+		q3 = {
+			'income': [1,1,1,1],
+			'balance': [1,2,3,4],
+			'cfs': [-3,-3,-3] ,
+		}
+		q4 = {
+			'income': [1,0,-1,-2],
+			'balance': [-2,-4,-6,-8],
+			'cfs': [-1,2,4] ,
+		}
+		self.assertEqual(self.testFilings.generate_Q4_cols(fy, q1, q2, q3), q4)

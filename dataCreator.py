@@ -370,11 +370,13 @@ class Filings():
 		for period in self.full_dict:
 			if 'FY' in period and self.filing_exists(f'{period[:3]}Q1')==True:
 				temp_dict[f'{period[:3]}Q4'] = self.generate_Q4_cols(self.full_dict[period], 
-					self.full_dict[f'{period[:3]}Q1'])
+					self.full_dict[f'{period[:3]}Q1'],
+					self.full_dict[f'{period[:3]}Q2'],
+					self.full_dict[f'{period[:3]}Q3'])
 			temp_dict[period] = full_dict[period]
 		self.full_dict = temp_dict
 
-	def generate_Q4_cols(self, fy_statements, q1_statements):
+	def generate_Q4_cols(self, fy_statements, q1_statements, q2_statements, q3_statements):
 		for statement_type in fy_statements:
 			for index in range(0, len(fy_statements)-1:
 
