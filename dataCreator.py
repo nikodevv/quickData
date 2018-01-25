@@ -376,10 +376,13 @@ class Filings():
 			temp_dict[period] = full_dict[period]
 		self.full_dict = temp_dict
 
-	def generate_Q4_cols(self, fy_statements, q1_statements, q2_statements, q3_statements):
-		for statement_type in fy_statements:
-			for index in range(0, len(fy_statements)-1:
-
+	def generate_Q4_cols(self, fy, q1, q2, q3):
+		q4 = {}
+		for stmnt in fy_statements:
+			q4[stmnt] = []
+			for i in range(0, len(fy_statements)-1):
+				q4[stmnt].append(fy[stmnt][i] - fy[stmnt][i])
+		return q4
 	def filing_exists(self, filing_period):
 		"""
 		returns true if full_dict has the specified filing
