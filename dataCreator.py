@@ -120,32 +120,21 @@ class DataScraper():
 			# generates random urls and adds them to dictionary if 
 			# they correspond to a financial statement table for filing which
 			# is fond via accession_number
+
 			url = (f'https://www.sec.gov/Archives/edgar/data/{cik}/' +
 				f'{accession_number}/R{counter}.htm')
 			page = requests.get(url)
 
-			link_dict['income'] = (f'https://www.sec.gov/Archives/edgar/data/{cik}/' +
-				f'{accession_number}/R4.htm')
-
-			link_dict['balance'] = (f'https://www.sec.gov/Archives/edgar/data/{cik}/' +
-				f'{accession_number}/R2.htm')
-
-			link_dict['cfs'] =(f'https://www.sec.gov/Archives/edgar/data/{cik}/' +
-				f'{accession_number}/R6.htm')
-
-			# Really weird bug arising for some statements if this is used instead.
-			# Keeping here in the meantime
-			# if (('Consolidated Statements of Operations' in page.text) or ('Consolidated Statements of Income' in page.text)):
-			# 	if not('income' in link_dict):
-			# 		link_dict['income'] = url
-			# 		print("LMFAO")
-			# elif (('Consolidated Balance' in page.text)
-			# 	or ('f Financial Condition' in page.text)):
-			# 	if not('balance' in link_dict):
-			# 		link_dict['balance'] = url
-			# elif ('Consolidated Statements of Cash' in page.text):
-			# 	if not('cfs' in link_dict):
-			# 		link_dict['cfs'] = url
+			if (('consolidated statements of operations' in page.text.lower()) or ('consolidated statements of income' in page.text.lower())):
+				if not('income' in link_dict):
+					link_dict['income'] = url
+			elif (('consolidated balance' in page.text.lower())
+				or ('f financial condition' in page.text.lower())):
+				if not('balance' in link_dict):
+					link_dict['balance'] = url
+			elif ('consolidated statements of cash' in page.text.lower()):
+				if not('cfs' in link_dict):
+					link_dict['cfs'] = url
 
 		accession_number = DataScraper.extract_accession_number_from_filings_link(self,
 			link_to_filing)
@@ -200,7 +189,6 @@ class Filings():
 	def __init__(self, cik):
 		self.cik = cik
 		self.collect_raw_data()
-		print('printing self.raw_data')
 		print(self.raw_data)
 		self.set_latest_period(self.raw_data)
 		statement_keys = ['balance', 'income', 'cfs']
