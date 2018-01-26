@@ -11,7 +11,8 @@ class TestFilings(TestCase):
 	"semantics" of the data generated is not tested.
 	"""
 	def setUp(self):
-		self.testFilings = Filings('1564408') # Snapchat cik
+		self.testFilings = Filings('814586') # LWAY cik 0000814586 
+		# Snapchat cik 1564408
 
 
 	def test_run_compile_income_statement(self):
@@ -31,6 +32,7 @@ class TestFilings(TestCase):
 					self.testFilings.full_dict[timeperiod][statement], list)
 				for data in self.testFilings.full_dict[timeperiod][statement]:
 					self.assertIsInstance(float(data), float)
+		print(self.testFilings.full_dict)
 
 	def test_Q4_generation(self):
 		"""unit test"""
@@ -59,4 +61,5 @@ class TestFilings(TestCase):
 			'balance': [-2,-4,-6,-8],
 			'cfs': [-1,2,4] ,
 		}
+
 		self.assertEqual(self.testFilings.generate_Q4_cols(fy, q1, q2, q3), q4)
