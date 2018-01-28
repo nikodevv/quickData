@@ -1,4 +1,9 @@
 To - Do Items:
 
-* Add functionality for interacting with CIKs
-* Save dictionaries in files
+* Right now there is a significant bug caused by inconsistent columns in SEC tables.
+	These inconsistencies are generally found in older filings (pre 2014).
+	This leads to completely senseless and jumbled data.
+* In addition, I'm not sure if the 0.70 fuzzy ratio is working as intended in 
+	old financials
+
+(both of these are reproducible via LWAY financials)
