@@ -70,11 +70,11 @@ class DataScraper():
 		if (period_ended == 'Q1' or period_ended == 'FY' or 
 			'Consolidated Balance Sheets' in page.text or
 			'Consolidated Statements of Cash' in page.text):
-			for i in range(0, len(values), 2):
+			for i in range(0, len(values)-1, 2):
 				tempValues.append([values[i+1], values[i]])
 			return dict(zip(line_items, tempValues))
 
-		for i in range(0, len(values), 4):
+		for i in range(0, len(values)-1, 4):
 			tempValues.append([values[i+1], values[i]])
 		return dict(zip(line_items, tempValues))
 
@@ -167,10 +167,18 @@ class DataScraper():
 		url = (f'https://www.sec.gov/Archives/edgar/data/{cik}/' +
 				f'{accession_number}/R1.htm')
 		tree = DataScraper.create_tree(self, url)
+		
+		# print([cell.text_content().strip() for cell in tree.xpath('//td[@class="text"]')])
 		fy_q_dict = {}
 		for x in [cell.text_content().strip() for cell in tree.xpath('//td[@class="text"]')]:
 			if ',' in x:
-				fy_q_dict['year'] = re.search(', +(....)', x).group(1)
+				# The 'except' part of this block might be sufficient for all financials,
+				# and the 'try' may not be necessary. Needs further testing.
+				try:
+					fy_q_dict['year'] = re.search(', +(....)', x).group(1)
+				# Older statements have some funky formatting so this fixes that.
+				except:
+					fy_q_dict['year'] = x[-4:]
 			elif 'Q1' in x:
 				fy_q_dict['period_ended'] = 'Q1'
 			elif 'Q2' in x:
@@ -189,7 +197,6 @@ class Filings():
 	def __init__(self, cik):
 		self.cik = cik
 		self.collect_raw_data()
-		print(self.raw_data)
 		self.set_latest_period(self.raw_data)
 		statement_keys = ['balance', 'income', 'cfs']
 		self.statement_splicers = {
@@ -281,7 +288,7 @@ class Filings():
 			# spot of get_row_labels list, nd then saves this new list
 			# via set_row_labels_in_self
 			if self.statement_splicers[statement_type] != []:
-				if self.statement_splicers[statement_type][0] in rowname:
+				if fuzz.ratio(self.statement_splicers[statement_type][0], rowname)> 0.95:
 					row_labels.append(self.add_accounts[statement_type][0])
 					row_labels.append(rowname)
 					self.statement_splicer_index[statement_type].append(row_labels.index(self.add_accounts[statement_type].pop(0)))
@@ -290,10 +297,8 @@ class Filings():
 					row_labels.append(rowname)
 			else:
 				row_labels.append(rowname)
-
 		if self.statement_splicers[statement_type] != []:
 			raise FinancialStandardError()
-		
 		self.row_labels[statement_type] = row_labels
 
 	def save_row_labels(self):

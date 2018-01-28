@@ -11,7 +11,7 @@ class TestFilings(TestCase):
 	"semantics" of the data generated is not tested.
 	"""
 	def setUp(self):
-		self.testFilings = Filings('814586') # LWAY cik 0000814586 
+		self.testFilings = Filings('0000814586') # LWAY cik 0000814586 
 		# Snapchat cik 1564408
 
 
