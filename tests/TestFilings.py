@@ -33,7 +33,7 @@ class TestFilings(TestCase):
 				for data in self.testFilings.full_dict[timeperiod][statement]:
 					self.assertIsInstance(float(data), float)
 		print(self.testFilings.full_dict)
-
+		# print(self.testFilings.raw_data)
 	# def test_Q4_generation(self):
 	# 	"""unit test"""
 	# 	fy = {

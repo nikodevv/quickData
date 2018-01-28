@@ -16,8 +16,11 @@ class DataScraper():
 		{'income': [amt of income Q2 of 2017, amt of income Q2 of 2016]}
 		"""
 		tree = DataScraper.create_tree(self, link_to_table)
-		line_items = DataScraper.make_line_items_unique(self,
-			tree.xpath('//td[@class="pl "]/a/text()|//td[@class="pl "]/a/strong/text()|//td[@class="pl custom"]/a/text()'))
+		line_items = DataScraper.make_line_items_unique(self, 
+			# first xpath string is for new filings: pl class has a space after name
+			tree.xpath('//td[@class="pl "]/a/text()|//td[@class="pl "]/a/strong/text()|//td[@class="pl custom"]/a/text()' 
+				# second xpath string is for older filings: pl class does have space after name
+				+ '//td[@class="pl"]/a/text()|//td[@class="pl"]/a/strong/text()|//td[@class="pl custom"]/a/text()'))
 		values = tree.xpath('//td[@class="nump" or @class="num" or @class="text"]/text()')
 		# if (link_to_table == 'https://www.sec.gov/Archives/edgar/data/1564408/000156459017017303/R2.htm' or
 		# 	link_to_table == 'https://www.sec.gov/Archives/edgar/data/1564408/000156459017017303/R6.htm'):
