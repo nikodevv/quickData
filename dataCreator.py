@@ -3,6 +3,7 @@ import requests
 import re
 from time import sleep
 from fuzzywuzzy import fuzz
+from collections import OrderedDict
 import time # for testing runtime lengths; remove from distributions.  
 
 class DataScraper():
@@ -22,9 +23,6 @@ class DataScraper():
 				# second xpath string is for older filings: pl class does have space after name
 				+ '//td[@class="pl"]/a/text()|//td[@class="pl"]/a/strong/text()|//td[@class="pl custom"]/a/text()'))
 		values = tree.xpath('//td[@class="nump" or @class="num" or @class="text"]/text()')
-		# if (link_to_table == 'https://www.sec.gov/Archives/edgar/data/1564408/000156459017017303/R2.htm' or
-		# 	link_to_table == 'https://www.sec.gov/Archives/edgar/data/1564408/000156459017017303/R6.htm'):
-		# 	print(len(line_items)*2 - len(DataScraper.format_values(self, values)))
 		return DataScraper.mapData(self, cik, line_items, 
 			DataScraper.format_values(self, values), link_to_table)
 
@@ -170,8 +168,6 @@ class DataScraper():
 		url = (f'https://www.sec.gov/Archives/edgar/data/{cik}/' +
 				f'{accession_number}/R1.htm')
 		tree = DataScraper.create_tree(self, url)
-		
-		# print([cell.text_content().strip() for cell in tree.xpath('//td[@class="text"]')])
 		fy_q_dict = {}
 		for x in [cell.text_content().strip() for cell in tree.xpath('//td[@class="text"]')]:
 			if ',' in x:
@@ -215,8 +211,9 @@ class Filings():
 		self.statement_splicer_index = {'balance': [],
 			'income': [], 'cfs': []}
 		self.row_labels = {}
+		self.save_data_cols()
+		self.add_Q4_cols()
 
-	# Execution time 6-7 sec on my machine for Snapchat.
 	def collect_raw_data(self):
 		"""
 		Takes all data from filings and stores it in a dictionary
@@ -377,14 +374,14 @@ class Filings():
 			for period in self.raw_data}
 
 	def add_Q4_cols(self):
-		temp_dict = {}
+		temp_dict = OrderedDict()
 		for period in self.full_dict:
-			if 'FY' in period and self.filing_exists(f'{period[:3]}Q1')==True:
-				temp_dict[f'{period[:3]}Q4'] = self.generate_Q4_cols(self.full_dict[period], 
-					self.full_dict[f'{period[:3]}Q1'],
-					self.full_dict[f'{period[:3]}Q2'],
-					self.full_dict[f'{period[:3]}Q3'])
-			temp_dict[period] = full_dict[period]
+			temp_dict[period] = self.full_dict[period]
+			if (('FY' in period) and (self.filing_exists(f'{period[:4]}Q1')))==True:
+				temp_dict[f'{period[:4]}Q4'] = self.generate_Q4_cols(self.full_dict[period], 
+					self.full_dict[f'{period[:4]}Q1'],
+					self.full_dict[f'{period[:4]}Q2'],
+					self.full_dict[f'{period[:4]}Q3'])
 		self.full_dict = temp_dict
 
 	def generate_Q4_cols(self, fy, q1, q2, q3):

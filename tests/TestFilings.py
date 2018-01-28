@@ -20,7 +20,6 @@ class TestFilings(TestCase):
 		regression test--checks to see whether the program
 		returns the right kind of data
 		"""
-		self.testFilings.save_data_cols()
 		self.assertIsInstance(self.testFilings.full_dict, dict)
 		for timeperiod in self.testFilings.full_dict:
 			self.assertIsInstance(timeperiod, str)
@@ -33,7 +32,8 @@ class TestFilings(TestCase):
 				for data in self.testFilings.full_dict[timeperiod][statement]:
 					self.assertIsInstance(float(data), float)
 		print(self.testFilings.full_dict)
-		# print(self.testFilings.raw_data)
+		# print([period for period in self.testFilings.raw_data])
+		# print(self.testFilings.raw_data['2015FY'])
 	# def test_Q4_generation(self):
 	# 	"""unit test"""
 	# 	fy = {
@@ -63,3 +63,4 @@ class TestFilings(TestCase):
 	# 	}
 
 	# 	self.assertEqual(self.testFilings.generate_Q4_cols(fy, q1, q2, q3), q4)
+	# 	
