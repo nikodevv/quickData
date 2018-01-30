@@ -31,8 +31,8 @@ class TestFilings(TestCase):
 					self.testFilings.full_dict[timeperiod][statement], list)
 				for data in self.testFilings.full_dict[timeperiod][statement]:
 					self.assertIsInstance(float(data), float)
-		print(self.testFilings.full_dict)
-		# print([period for period in self.testFilings.raw_data])
+		# print(self.testFilings.full_dict)
+		print([period for period in self.testFilings.raw_data])
 		# print(self.testFilings.raw_data['2015FY'])
 	# def test_Q4_generation(self):
 	# 	"""unit test"""

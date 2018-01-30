@@ -4,7 +4,10 @@ import re
 from time import sleep
 from fuzzywuzzy import fuzz
 from collections import OrderedDict
-import time # for testing runtime lengths; remove from distributions.  
+from os.path import isfile, dirname, join, realpath
+from json import dump
+
+# import time # for testing runtime lengths; remove from distributions.  
 
 class DataScraper():
 	"""Scraps income statement of a given company, aligning historical data"""
@@ -407,6 +410,35 @@ class Filings():
 		as an unintentional byproduct
 		"""
 		pass
+
+class CreateFiles():
+	def __init__(self, ciks):
+		companies = []
+		companies.extend(ciks)
+		self.main(companies)
+
+	def main(self, companies, reparse=False):
+		# pass reparse=True to overwrite 
+		# all stored data files. 
+		for cik in companies:
+			if self.file_exists(cik, reparse=reparse)==False:
+				self.create_company_files(cik)
+
+	def file_exists(self, cik, reparse=False):
+		"""
+		Checks whether a file exists in directory ./filename/
+		"""
+		if isfile(join(dirname(__file__), f'data/{cik}-values.txt')) == True and reparse==False:
+			return True
+		return False
+
+	def create_company_files(self, cik):
+		"""Creates .txt JSON files of Filings() data"""
+		statements = Filings(cik)
+		with open(f'data/{cik}-values.txt', 'w') as file:
+			dump(statements.full_dict, file, sort_keys=True, indent=4)
+		with open(f'data/{cik}-labels.txt', 'w') as file:
+			dump(statements.row_labels, file, sort_keys=True, indent=4)
 
 class FinancialStandardError(Exception):
     def __init__(self):
